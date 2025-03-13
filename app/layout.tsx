@@ -1,21 +1,18 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Footer from "./components/Footer";
-import { CSPostHogProvider } from "./providers";
-import { Analytics } from "@vercel/analytics/react";
 import { Inter } from "next/font/google";
-import { AuthProvider } from "./contexts/AuthContext";
 import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Achar.promo - Economize Mais em Menos Tempo",
-  description: "Ache produtos iguais ou similares por preços menores.",
+  title: "SemenTech - Encontre sementes de alta qualidade",
+  description: "Encontre sementes de alta qualidade.",
   openGraph: {
-    title: "Achar.promo",
-    description: "Ache produtos iguais ou similares por preços menores.",
-    siteName: "Achar.promo",
+    title: "SemenTech",
+    description: "Encontre sementes de alta qualidade.",
+    siteName: "SemenTech",
     type: "website",
     locale: "pt_BR",
     images: {
@@ -35,19 +32,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <CSPostHogProvider>
-        <body className={inter.className}>
-          {/* <AuthProvider> */}
+      <body className={inter.className}>
+        {/* <AuthProvider> */}
           <main className="min-h-[100vh] font-Mulish">{children}</main>
 
           <footer>
             <Footer />
           </footer>
           {/* </AuthProvider> */}
-          <Analytics />
           <Toaster position="bottom-center" />
-        </body>
-      </CSPostHogProvider>
+      </body>
     </html>
   );
 }
