@@ -9,12 +9,15 @@ export default function Home() {
       {/* Permanently disabled login button for now */}
       {/* <LoginButton /> */}
 
-      <div id="home" className="flex flex-col items-center justify-center py-10">
+      <div
+        id="home"
+        className="flex flex-col items-center justify-center py-10"
+      >
         <SearchButton />
-        
+
         {/* Recommended section with proper spacing */}
-        <div className="w-full max-w-7xl mx-auto px-4 mt-8">
-          {/* <Recommended /> */}
+        <div className="w-full max-w-7xl mx-auto px-4 mt-16">
+          <Recommended />
         </div>
       </div>
     </div>

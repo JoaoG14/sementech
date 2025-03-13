@@ -3,12 +3,11 @@ import React from "react";
 const NavBar = () => {
   return (
     <div>
-      <div className="flex font-Mulish bg-white w-screen justify-center h-16 items-center">
-        <a href="/" className="text-[#3042FB] text-3xl font-black font-Mulish">
-          achar.promo
+      <div className="flex font-Mulish bg-gray-50 w-screen justify-center h-24 items-center">
+        <a href="/" className="text-[#7DCB2D] text-3xl font-black font-Mulish">
+          SEMENTEC
         </a>
       </div>
-      <div className="h-[1px] bg-[#C1C1C1]"></div>
     </div>
   );
 };

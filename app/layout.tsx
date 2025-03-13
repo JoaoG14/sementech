@@ -34,13 +34,13 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={inter.className}>
         {/* <AuthProvider> */}
-          <main className="min-h-[100vh] font-Mulish">{children}</main>
+        <main className="min-h-[100vh] font-Mulish">{children}</main>
 
-          <footer>
-            <Footer />
-          </footer>
-          {/* </AuthProvider> */}
-          <Toaster position="bottom-center" />
+        <footer>
+          <Footer />
+        </footer>
+        {/* </AuthProvider> */}
+        <Toaster position="bottom-center" />
       </body>
     </html>
   );

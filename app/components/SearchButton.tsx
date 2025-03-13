@@ -3,6 +3,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { apiBaseUrl } from "../shared";
 import { ImageKitProvider, IKImage, IKUpload } from "imagekitio-next";
@@ -14,6 +15,7 @@ const SearchButton = () => {
   const [url, setUrl] = useState("");
   const router = useRouter();
   const [isDeepSearch, setIsDeepSearch] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   const handleImageClick = () => {
     const imageInput = document.getElementById("imageInput");
@@ -30,7 +32,8 @@ const SearchButton = () => {
   const authenticator = async () => {
     try {
       const response = await fetch(`${apiBaseUrl}/api/imagekitauth`);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       return data;
     } catch (error) {
@@ -40,18 +43,31 @@ const SearchButton = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full px-4 py-10">
+    <div className="flex flex-col items-center justify-center w-full px-4">
       {/* Logo */}
-      <div className="mb-4 text-center">
-        <h1 className="text-6xl font-bold text-green-800 mb-2" style={{ fontFamily: 'system-ui' }}>Sementech</h1>
-        <p className="text-xl text-gray-600">Encontre as melhores sementes para o seu cultivo</p>
+      <div className="text-center">
+        <Image
+          src="/assets/sementech-logo.png"
+          alt="Sementech Logo"
+          width={300}
+          height={300}
+          priority
+          className="mx-auto"
+        />
+        <p className="text-xl text-gray-600 mb-10">
+          Encontre as melhores sementes para o seu cultivo
+        </p>
       </div>
 
       {/* Search Container */}
       <div className="w-full max-w-3xl relative">
         {/* Glow Effects */}
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-[#86EFAC] to-[#4ADE80] rounded-2xl blur-lg opacity-75 group-hover:opacity-100 animate-pulse"></div>
-        
+        <div
+          className={`absolute -inset-0.5 bg-gradient-to-r from-[#86EFAC] to-[#7ECD2C] rounded-2xl blur-lg transition-opacity ${
+            !isFocused ? "opacity-100 animate-pulse" : "opacity-0"
+          }`}
+        ></div>
+
         {/* Search Bar */}
         <div className="relative bg-white shadow-lg rounded-2xl p-2 border border-gray-200">
           <div className="flex items-center gap-2">
@@ -60,6 +76,7 @@ const SearchButton = () => {
               type="text"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
+              onFocus={() => setIsFocused(true)}
               placeholder="Buscar por sementes, plantas ou culturas..."
               className="flex-1 bg-transparent px-6 py-3 text-gray-800 placeholder-gray-400 text-lg focus:outline-none"
             />
@@ -71,8 +88,19 @@ const SearchButton = () => {
                 className="p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group border border-gray-200"
                 title="Enviar imagem de planta para identificação"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600 group-hover:text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 text-gray-600 group-hover:text-gray-800"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
                 </svg>
                 <ImageKitProvider
                   publicKey={publicKey}
@@ -92,11 +120,22 @@ const SearchButton = () => {
               {/* Search Button */}
               <button
                 onClick={handleSearch}
-                className="p-3 rounded-xl bg-gradient-to-r from-emerald-400 to-green-400 hover:from-emerald-500 hover:to-green-500 transition-all shadow-sm hover:shadow-md"
+                className="p-3 rounded-xl bg-gradient-to-r from-[#7ECD2C] to-[#9BDE5A] hover:from-[#6CB925] hover:to-[#8AC94D] transition-all shadow-sm hover:shadow-md"
                 title="Buscar"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
                 </svg>
               </button>
             </div>
@@ -111,7 +150,7 @@ const SearchButton = () => {
                 onChange={(e) => setIsDeepSearch(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#4ADE80]"></div>
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#7ECD2C]"></div>
             </label>
             <span className="text-gray-600 text-sm">Busca avançada</span>
           </div>
@@ -125,7 +164,7 @@ const SearchButton = () => {
           {["Hortaliças", "Orgânicas", "Flores", "Frutíferas"].map((item) => (
             <button
               key={item}
-              className="px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm transition-colors"
+              className="px-4 py-2 rounded-full bg-[#E8F5D6] hover:bg-[#D5EBBA] text-[#4A7A1A] text-sm transition-colors"
               onClick={() => setUrl(item)}
             >
               {item}
