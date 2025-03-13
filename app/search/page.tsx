@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import RecomendationCard from "../components/RecomendationCard";
 import Recommended from "../components/Recommended";
 
-const Search = () => {
+const SearchContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(
@@ -70,6 +70,14 @@ const Search = () => {
         <Recommended />
       </div>
     </div>
+  );
+};
+
+const Search = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchContent />
+    </Suspense>
   );
 };
 
