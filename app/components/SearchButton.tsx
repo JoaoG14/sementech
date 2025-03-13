@@ -26,7 +26,15 @@ const SearchButton = () => {
 
   const handleSearch = () => {
     if (!url) return;
-    router.push(`/${url.split("?")[0]}?search_from=home&deep=${isDeepSearch}`);
+    router.push(
+      `/search?query=${encodeURIComponent(url)}&deep=${isDeepSearch}`
+    );
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
   };
 
   const authenticator = async () => {
@@ -43,7 +51,7 @@ const SearchButton = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full px-4">
+    <div className="flex flex-col items-center justify-center w-full px-4 py-6">
       {/* Logo */}
       <div className="text-center">
         <Image
@@ -52,9 +60,9 @@ const SearchButton = () => {
           width={300}
           height={300}
           priority
-          className="mx-auto"
+          className="mx-auto w-[200px] sm:w-[300px] h-auto"
         />
-        <p className="text-xl text-gray-600 mb-10">
+        <p className="text-base sm:text-xl text-gray-600 mb-6 sm:mb-10 px-4">
           Encontre as melhores sementes para o seu cultivo
         </p>
       </div>
@@ -77,12 +85,13 @@ const SearchButton = () => {
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               onFocus={() => setIsFocused(true)}
+              onKeyPress={handleKeyPress}
               placeholder="Buscar por sementes, plantas ou culturas..."
-              className="flex-1 bg-transparent px-6 py-3 text-gray-800 placeholder-gray-400 text-lg focus:outline-none"
+              className="flex-1 bg-transparent px-4 sm:px-6 py-3 text-gray-800 placeholder-gray-400 text-base sm:text-lg focus:outline-none"
             />
 
-            {/* Image Upload */}
-            <div className="flex items-center gap-2 px-2">
+            {/* Image Upload and Search Buttons */}
+            <div className="flex items-center gap-2">
               <button
                 onClick={handleImageClick}
                 className="p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group border border-gray-200"
@@ -90,7 +99,7 @@ const SearchButton = () => {
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-gray-600 group-hover:text-gray-800"
+                  className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600 group-hover:text-gray-800"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -125,7 +134,7 @@ const SearchButton = () => {
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-white"
+                  className="h-5 w-5 sm:h-6 sm:w-6 text-white"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -142,7 +151,7 @@ const SearchButton = () => {
           </div>
 
           {/* Deep Search Toggle */}
-          <div className="px-6 py-2 flex items-center gap-2 border-t border-gray-200 mt-2">
+          <div className="px-4 sm:px-6 py-2 flex items-center gap-2 border-t border-gray-200 mt-2">
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
@@ -152,19 +161,23 @@ const SearchButton = () => {
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#7ECD2C]"></div>
             </label>
-            <span className="text-gray-600 text-sm">Busca avançada</span>
+            <span className="text-gray-600 text-xs sm:text-sm">
+              Busca avançada
+            </span>
           </div>
         </div>
       </div>
 
       {/* Example Searches */}
-      <div className="mt-8 text-center">
-        <p className="text-gray-600 text-sm mb-4">Buscas populares</p>
+      <div className="mt-6 sm:mt-8 text-center px-4">
+        <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4">
+          Buscas populares
+        </p>
         <div className="flex flex-wrap justify-center gap-2">
           {["Hortaliças", "Orgânicas", "Flores", "Frutíferas"].map((item) => (
             <button
               key={item}
-              className="px-4 py-2 rounded-full bg-[#E8F5D6] hover:bg-[#D5EBBA] text-[#4A7A1A] text-sm transition-colors"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#E8F5D6] hover:bg-[#D5EBBA] text-[#4A7A1A] text-xs sm:text-sm transition-colors"
               onClick={() => setUrl(item)}
             >
               {item}

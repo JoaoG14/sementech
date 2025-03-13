@@ -21,15 +21,6 @@ const Footer = () => {
               </a>
             </li>
             <li>
-              <a
-                href="#"
-                target="_blank"
-                className="hover:underline me-4 md:me-6"
-              >
-                Blog
-              </a>
-            </li>
-            <li>
               <a href="/help" className="hover:underline me-4 md:me-6">
                 Ajuda
               </a>

@@ -9,9 +9,9 @@ import {
 
 const Terms = () => {
   return (
-    <div>
+    <div className="bg-gray-50">
       <NavBar />
-      <div className=" w-[90vw] mx-auto mt-36 max-w-[800px]">
+      <div className=" w-[90vw] mx-auto pt-36 min-h-screen max-w-[800px]">
         <h2 className=" mb-2 text-3xl tracking-tight font-black  text-gray-900 ">
           Termos de Uso
         </h2>
@@ -20,48 +20,63 @@ const Terms = () => {
             <AccordionTrigger>1. Sobre Nós</AccordionTrigger>
             <AccordionContent>
               <p>
-                A pexinxas.com é uma ferramenta de busca de ofertas independente
-                que tem como objetivo ajudar os usuários a economizarem em suas
-                compras online. No entanto, não somos responsáveis pelas ofertas
-                exibidas em nosso site e nem pelas políticas das lojas
-                referenciadas.
+                A SemenTech é uma plataforma especializada na comercialização de
+                sementes de alta qualidade para agricultura e jardinagem. Nosso
+                objetivo é fornecer aos agricultores, produtores e entusiastas
+                do cultivo as melhores variedades de sementes disponíveis no
+                mercado. Todas as sementes comercializadas em nossa plataforma
+                são certificadas e seguem as normas do Ministério da
+                Agricultura.
               </p>
             </AccordionContent>
           </AccordionItem>
 
           <AccordionItem value="item-2">
-            <AccordionTrigger>2. Uso de Imagens</AccordionTrigger>
+            <AccordionTrigger>2. Produtos e Garantias</AccordionTrigger>
             <AccordionContent>
-              Os logotipos mostrados no site pertencem às lojas correspondentes.
-              As fotos dos produtos são obtidas dos próprios sites das
-              respectivas lojas.
+              Garantimos a qualidade e procedência de todas as nossas sementes.
+              As imagens e descrições dos produtos são ilustrativas e
+              representam fielmente as variedades oferecidas. A taxa de
+              germinação indicada em cada produto é testada e certificada, porém
+              pode variar de acordo com as condições de armazenamento e cultivo.
             </AccordionContent>
           </AccordionItem>
 
           <AccordionItem value="item-3">
-            <AccordionTrigger>3. Direitos Autorais</AccordionTrigger>
+            <AccordionTrigger>
+              3. Direitos Autorais e Propriedade Intelectual
+            </AccordionTrigger>
             <AccordionContent>
               Todo o conteúdo do site, incluindo textos, gráficos, logos,
-              ícones, imagens e software, é propriedade da pexinxas.com
-              ou de seus respectivos donos e está protegido pelas leis de
-              direitos autorais e de propriedade intelectual.
+              ícones, imagens, descrições de variedades e informações técnicas,
+              é propriedade da SemenTech ou de seus fornecedores e está
+              protegido pelas leis de direitos autorais e de propriedade
+              intelectual. As variedades patenteadas são comercializadas sob
+              licença de seus obtentores.
             </AccordionContent>
           </AccordionItem>
 
           <AccordionItem value="item-4">
-            <AccordionTrigger>4. Política de privacidade</AccordionTrigger>
+            <AccordionTrigger>4. Política de Privacidade</AccordionTrigger>
             <AccordionContent>
-              A privacidade dos nossos usuários é de extrema importância para
-              nós. No momento não exigimos cadastro de nenhum usuário da
-              plataforma. Não compartilhamos seus dados com terceiros a não ser
-              que sejemos obrigados por meios judiciais.
+              Protegemos rigorosamente os dados de nossos clientes. As
+              informações coletadas são utilizadas apenas para processamento de
+              pedidos, envio de recomendações de cultivo e comunicações
+              relevantes sobre seus produtos. Não compartilhamos dados pessoais
+              com terceiros, exceto quando necessário para a entrega dos
+              produtos ou por obrigação legal.
             </AccordionContent>
           </AccordionItem>
 
           <AccordionItem value="item-5">
-            <AccordionTrigger>5. Modificação dos Termos de Uso</AccordionTrigger>
+            <AccordionTrigger>
+              5. Modificação dos Termos de Uso
+            </AccordionTrigger>
             <AccordionContent>
-              Os nossos termos de uso podem ser modificados a qualquer momento.
+              Reservamo-nos o direito de modificar estes termos de uso a
+              qualquer momento, sendo as alterações comunicadas através de nosso
+              site. A continuidade do uso de nossos serviços após as
+              modificações implica na aceitação dos novos termos.
             </AccordionContent>
           </AccordionItem>
         </Accordion>

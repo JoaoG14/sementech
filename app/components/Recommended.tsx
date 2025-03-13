@@ -48,7 +48,7 @@ const SeedDisplay = () => {
           Nenhuma semente disponível no momento.
         </div>
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mx-auto px-2 w-full max-w-[1200px] mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 mx-auto px-2 w-full max-w-[1200px] mb-8">
           {seeds.map((seed, index) => (
             <div key={seed.id || `seed-${seed.name}-${index}`}>
               <RecomendationCard
