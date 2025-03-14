@@ -4,6 +4,7 @@ import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { apiBaseUrl } from "../../shared";
 
 interface SeedMatch {
   id: string;
@@ -30,24 +31,117 @@ const ImageResultsContent = () => {
   const [results, setResults] = useState<ComparisonResults | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      const dataParam = searchParams.get("data");
-      if (!dataParam) {
-        setError("Nenhum dado de comparação encontrado");
-        setLoading(false);
-        return;
-      }
+    const fetchResults = async () => {
+      try {
+        // Try to get the result ID from URL params
+        let resultId = searchParams.get("id");
 
-      const parsedData = JSON.parse(decodeURIComponent(dataParam));
-      setResults(parsedData);
-    } catch (err) {
-      console.error("Error parsing results:", err);
-      setError("Erro ao processar os resultados da comparação");
-    } finally {
-      setLoading(false);
-    }
+        // If not found, try to get it from localStorage as a fallback
+        if (!resultId) {
+          try {
+            resultId = localStorage.getItem("lastResultId");
+            console.log("Using resultId from localStorage:", resultId);
+          } catch (e) {
+            console.error("Failed to access localStorage:", e);
+          }
+        }
+
+        if (!resultId) {
+          setError("ID de resultado não encontrado");
+          setLoading(false);
+          return;
+        }
+
+        // Use relative URL if apiBaseUrl is not defined
+        const apiUrl = apiBaseUrl
+          ? `${apiBaseUrl}/api/image-comparison?id=${resultId}`
+          : `/api/image-comparison?id=${resultId}`;
+
+        console.log("Fetching results from:", apiUrl);
+        const response = await fetch(apiUrl);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("API response error:", response.status, errorText);
+          throw new Error(
+            `HTTP error! status: ${response.status}, details: ${errorText}`
+          );
+        }
+
+        const data = await response.json();
+
+        if (!data || !data.allResults) {
+          throw new Error("Invalid data format received from API");
+        }
+
+        setResults(data);
+
+        // Store the results in localStorage as a fallback
+        try {
+          localStorage.setItem("lastImageResults", JSON.stringify(data));
+        } catch (e) {
+          console.error("Failed to store results in localStorage:", e);
+        }
+      } catch (err) {
+        console.error("Error fetching results:", err);
+
+        // Try to get results from localStorage as a fallback
+        try {
+          const storedResults = localStorage.getItem("lastImageResults");
+          if (storedResults) {
+            console.log("Using results from localStorage");
+            const parsedResults = JSON.parse(storedResults);
+            if (parsedResults && parsedResults.allResults) {
+              setResults(parsedResults);
+              setError(null);
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (e) {
+          console.error("Failed to access localStorage for results:", e);
+        }
+
+        setError("Erro ao buscar os resultados da comparação");
+        setErrorDetails(err instanceof Error ? err.message : String(err));
+
+        // Try to test the storage system
+        try {
+          const testUrl = apiBaseUrl
+            ? `${apiBaseUrl}/api/test-storage`
+            : `/api/test-storage`;
+
+          console.log("Testing storage at:", testUrl);
+          const testResponse = await fetch(testUrl);
+          const testData = await testResponse.json();
+          console.log("Storage test results:", testData);
+
+          if (!testData.success) {
+            setErrorDetails(
+              (prev) =>
+                `${prev || ""}\n\nStorage test failed: ${JSON.stringify(
+                  testData
+                )}`
+            );
+          }
+        } catch (testErr) {
+          console.error("Storage test failed:", testErr);
+          setErrorDetails(
+            (prev) =>
+              `${prev || ""}\n\nStorage test error: ${
+                testErr instanceof Error ? testErr.message : String(testErr)
+              }`
+          );
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResults();
   }, [searchParams]);
 
   if (loading) {
@@ -85,12 +179,29 @@ const ImageResultsContent = () => {
             Ocorreu um erro
           </h1>
           <p className="text-gray-600 mb-6">{error || "Erro desconhecido"}</p>
-          <Link
-            href="/"
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-          >
-            Voltar para a página inicial
-          </Link>
+
+          {errorDetails && (
+            <div className="mb-6 text-left bg-gray-100 p-4 rounded-lg overflow-auto max-h-40 text-xs">
+              <p className="font-semibold mb-1">Detalhes técnicos:</p>
+              <pre className="whitespace-pre-wrap">{errorDetails}</pre>
+            </div>
+          )}
+
+          <div className="flex flex-col space-y-3">
+            <Link
+              href="/"
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Voltar para a página inicial
+            </Link>
+
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Tentar novamente
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -162,10 +273,9 @@ const ImageResultsContent = () => {
                   className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                 >
                   <div className="relative h-48">
-                    <Image
+                    <img
                       src={match.imageUrl}
                       alt={match.name}
-                      fill
                       className="object-cover"
                     />
                     <div className="absolute top-2 right-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-full">
@@ -198,10 +308,9 @@ const ImageResultsContent = () => {
                   className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                 >
                   <div className="relative h-48">
-                    <Image
+                    <img
                       src={match.imageUrl}
                       alt={match.name}
-                      fill
                       className="object-cover"
                     />
                     <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
@@ -234,10 +343,9 @@ const ImageResultsContent = () => {
                   className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                 >
                   <div className="relative h-48">
-                    <Image
+                    <img
                       src={match.imageUrl}
                       alt={match.name}
-                      fill
                       className="object-cover"
                     />
                     <div className="absolute top-2 right-2 bg-yellow-600 text-white text-xs font-bold px-2 py-1 rounded-full">

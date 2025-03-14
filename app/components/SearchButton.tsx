@@ -1,12 +1,11 @@
 "use client";
 
-import React from "react";
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import Image from "next/image";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { apiBaseUrl } from "../shared";
 import { ImageKitProvider, IKImage, IKUpload } from "imagekitio-next";
+import toast from "react-hot-toast";
 
 const publicKey = process.env.NEXT_PUBLIC_PUBLIC_KEY;
 const urlEndpoint = process.env.NEXT_PUBLIC_URL_ENDPOINT;
@@ -16,6 +15,8 @@ const SearchButton = () => {
   const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleImageClick = () => {
     const imageInput = document.getElementById("imageInput");
@@ -37,9 +38,15 @@ const SearchButton = () => {
 
   const authenticator = async () => {
     try {
-      const response = await fetch(`${apiBaseUrl}/api/imagekitauth`);
+      // Use relative URL if apiBaseUrl is not defined
+      const authUrl = apiBaseUrl
+        ? `${apiBaseUrl}/api/imagekitauth`
+        : "/api/imagekitauth";
+      const response = await fetch(authUrl);
+
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
+
       const data = await response.json();
       return data;
     } catch (error) {
@@ -50,14 +57,21 @@ const SearchButton = () => {
 
   // Handle image upload success
   const handleUploadSuccess = async (res: any) => {
-    try {
-      setIsUploading(true);
+    setIsLoading(true);
+    setError(null);
 
+    try {
       // Get the uploaded image URL
       const imageUrl = res.url;
 
-      // Call the image comparison API
-      const response = await fetch(`${apiBaseUrl}/api/image-comparison`, {
+      // Use relative URL if apiBaseUrl is not defined
+      const apiUrl = apiBaseUrl
+        ? `${apiBaseUrl}/api/image-comparison`
+        : `/api/image-comparison`;
+
+      console.log("Sending image to API:", apiUrl);
+
+      const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -66,22 +80,70 @@ const SearchButton = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error("API response error:", response.status, errorText);
+        throw new Error(
+          `HTTP error! status: ${response.status}, details: ${errorText}`
+        );
       }
 
       const data = await response.json();
+      console.log("API response:", data);
 
-      // Redirect to results page with the comparison data
-      router.push(
-        `/search/image-results?data=${encodeURIComponent(JSON.stringify(data))}`
+      if (!data.resultId) {
+        throw new Error("No result ID returned from API");
+      }
+
+      // Store the result ID in localStorage as a fallback
+      try {
+        localStorage.setItem("lastResultId", data.resultId);
+
+        // Also store match counts if available
+        if (data.matchCounts) {
+          localStorage.setItem(
+            "lastMatchCounts",
+            JSON.stringify(data.matchCounts)
+          );
+        }
+      } catch (e) {
+        console.error("Failed to store result data in localStorage:", e);
+      }
+
+      // Show a success message with match counts if available
+      if (data.matchCounts) {
+        const { total, best, good } = data.matchCounts;
+        const matchMessage =
+          best > 0
+            ? `Encontramos ${best} correspondências excelentes!`
+            : good > 0
+            ? `Encontramos ${good} boas correspondências!`
+            : total > 0
+            ? `Encontramos ${total} possíveis correspondências.`
+            : "Análise concluída. Redirecionando para os resultados...";
+
+        toast.success(matchMessage, {
+          duration: 3000,
+        });
+      } else {
+        toast.success("Imagem processada com sucesso!", {
+          duration: 2000,
+        });
+      }
+
+      // Redirect to results page with the result ID
+      router.push(`/search/image-results?id=${data.resultId}`);
+    } catch (err) {
+      console.error("Error during image comparison:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Erro ao processar a comparação de imagem"
       );
-    } catch (error) {
-      console.error("Error processing image:", error);
-      alert(
-        "Ocorreu um erro ao processar a imagem. Por favor, tente novamente."
-      );
+      toast.error("Erro ao processar a imagem. Por favor, tente novamente.", {
+        duration: 5000,
+      });
     } finally {
-      setIsUploading(false);
+      setIsLoading(false);
     }
   };
 
@@ -107,7 +169,6 @@ const SearchButton = () => {
         {/* Search Bar */}
         <div className="relative bg-white shadow-lg rounded-2xl p-2 border border-gray-200">
           <div className="flex items-center gap-2">
-            {/* URL Input */}
             <input
               type="text"
               value={url}
@@ -117,40 +178,17 @@ const SearchButton = () => {
               placeholder="Buscar por sementes, plantas ou culturas..."
               className="flex-1 bg-transparent px-4 sm:px-6 py-3 text-gray-800 placeholder-gray-400 text-base sm:text-lg focus:outline-none"
             />
-
-            {/* Image Upload and Search Buttons */}
             <div className="flex items-center gap-2">
               <button
                 onClick={handleImageClick}
-                disabled={isUploading}
-                className={`p-3 rounded-xl ${
-                  isUploading
-                    ? "bg-gray-200 cursor-not-allowed"
-                    : "bg-gray-50 hover:bg-gray-100"
-                } transition-colors group border border-gray-200`}
+                className="p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group border border-gray-200"
                 title="Enviar imagem de planta para identificação"
+                disabled={isUploading || isLoading}
               >
                 {isUploading ? (
-                  <svg
-                    className="animate-spin h-5 w-5 sm:h-6 sm:w-6 text-gray-600"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
+                  <div className="animate-spin h-5 w-5 sm:h-6 sm:w-6 border-t-2 border-b-2 border-gray-600 rounded-full"></div>
+                ) : isLoading ? (
+                  <div className="animate-spin h-5 w-5 sm:h-6 sm:w-6 border-t-2 border-b-2 border-gray-600 rounded-full"></div>
                 ) : (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -162,36 +200,17 @@ const SearchButton = () => {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth={2}
+                      strokeWidth="2"
                       d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
+                    ></path>
                   </svg>
                 )}
-                <ImageKitProvider
-                  publicKey={publicKey}
-                  urlEndpoint={urlEndpoint}
-                  authenticator={authenticator}
-                >
-                  <IKUpload
-                    id="imageInput"
-                    className="hidden"
-                    fileName="upload.png"
-                    onError={(err) => console.log("Error", err)}
-                    onSuccess={handleUploadSuccess}
-                  />
-                </ImageKitProvider>
               </button>
-
-              {/* Search Button */}
               <button
                 onClick={handleSearch}
-                disabled={isUploading}
-                className={`p-3 rounded-xl ${
-                  isUploading
-                    ? "bg-gray-300 cursor-not-allowed"
-                    : "bg-gradient-to-r from-[#7ECD2C] to-[#9BDE5A] hover:from-[#6CB925] hover:to-[#8AC94D]"
-                } transition-all shadow-sm hover:shadow-md`}
+                className="p-3 rounded-xl bg-gradient-to-r from-[#7ECD2C] to-[#9BDE5A] hover:from-[#6CB925] hover:to-[#8AC94D] transition-all shadow-sm hover:shadow-md"
                 title="Buscar"
+                disabled={isLoading}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -203,14 +222,43 @@ const SearchButton = () => {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
+                    strokeWidth="2"
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
+                  ></path>
                 </svg>
               </button>
             </div>
           </div>
         </div>
+
+        {error && (
+          <div className="mt-2 text-sm text-red-600 bg-red-50 p-2 rounded">
+            {error}
+          </div>
+        )}
+
+        <ImageKitProvider
+          publicKey={publicKey}
+          urlEndpoint={urlEndpoint}
+          authenticator={authenticator}
+        >
+          <div className="hidden">
+            <IKUpload
+              id="imageInput"
+              className="hidden"
+              fileName="seed_image.jpg"
+              onSuccess={handleUploadSuccess}
+              onError={(err) => {
+                console.error("Upload error:", err);
+                setError(
+                  "Erro ao enviar a imagem. Por favor, tente novamente."
+                );
+                setIsUploading(false);
+              }}
+              onChange={() => setIsUploading(true)}
+            />
+          </div>
+        </ImageKitProvider>
       </div>
 
       {/* Example Searches */}

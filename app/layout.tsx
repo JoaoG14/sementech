@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Footer from "./components/Footer";
 import { Inter } from "next/font/google";
-import { Toaster } from "react-hot-toast";
+import Toaster from "./components/Toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -40,7 +40,7 @@ export default function RootLayout({
           <Footer />
         </footer>
         {/* </AuthProvider> */}
-        <Toaster position="bottom-center" />
+        <Toaster />
       </body>
     </html>
   );
