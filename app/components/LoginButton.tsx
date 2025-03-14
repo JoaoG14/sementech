@@ -18,7 +18,7 @@ const LoginButton = () => {
   };
 
   return (
-    <div className="absolute top-4 right-4 md:top-6 md:right-6">
+    <div className="absolute top-6 right-6 md:top-8 md:right-8 lg:top-10 lg:right-16">
       {user ? (
         <div className="flex items-center gap-4">
           <Link
