@@ -123,7 +123,7 @@ const SearchContent = () => {
           <div className="mb-2 text-center">
             {searchParams.get("query") && (
               <h2 className="text-xl font-semibold mb-6 text-gray-800">
-                Resultados para "{searchParams.get("query")}"
+                Resultados para &quot;{searchParams.get("query")}&quot;
               </h2>
             )}
 
