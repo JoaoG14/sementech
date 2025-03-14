@@ -1,13 +1,13 @@
 import Recommended from "./components/Recommended";
 import SearchButton from "./components/SearchButton";
+import LoginButton from "./components/LoginButton";
 
 export const fetchCache = "default-no-store";
 
 export default function Home() {
   return (
-    <div className="font-Mulish bg-gray-50 min-h-screen">
-      {/* Permanently disabled login button for now */}
-      {/* <LoginButton /> */}
+    <div className="font-Mulish bg-gray-50 min-h-screen relative">
+      <LoginButton />
 
       <div
         id="home"

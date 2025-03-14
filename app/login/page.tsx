@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import GoogleSignInButton from "../components/auth/GoogleSignInButton";
 import Navbar from "../components/NavBar";
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,12 +48,12 @@ export default function Login() {
   };
 
   return (
-    <>
+    <div className="flex flex-col min-h-screen bg-gray-50">
       <Navbar />
-      <div className="min-h-[100%] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 font-Mulish">
+      <main className="flex-grow flex items-start justify-center pt-16 px-4 sm:px-6 lg:px-8 font-Mulish">
         <div className="max-w-md w-full space-y-8">
           <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            <h2 className="text-center text-3xl font-extrabold text-gray-900">
               Entre na sua conta
             </h2>
           </div>
@@ -68,7 +69,7 @@ export default function Login() {
                   type="email"
                   autoComplete="email"
                   required
-                  className="appearance-none h-[55px] rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  className="appearance-none h-[55px] rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -84,7 +85,7 @@ export default function Login() {
                   type="password"
                   autoComplete="current-password"
                   required
-                  className="appearance-none h-[55px] rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  className="appearance-none h-[55px] rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
                   placeholder="Senha"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -100,7 +101,7 @@ export default function Login() {
               <div className="text-sm">
                 <Link
                   href="/forgot-password"
-                  className="font-bold text-[#3042FB] hover:text-[#606df9]"
+                  className="font-bold text-green-600 hover:text-green-500"
                 >
                   Esqueceu sua senha?
                 </Link>
@@ -111,7 +112,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="group font-extrabold text-xl h-[55px] relative w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md text-white bg-[#3042FB] hover:bg-[#2532bf] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                className="group font-extrabold text-xl h-[55px] relative w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
               >
                 {loading ? "Entrando..." : "Entrar"}
               </button>
@@ -123,7 +124,7 @@ export default function Login() {
               <div className="w-full border-t border-gray-300" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 text-lg font-bold bg-white text-gray-500">
+              <span className="px-2 text-lg font-bold bg-gray-50 text-gray-500">
                 Ou entre com
               </span>
             </div>
@@ -141,13 +142,13 @@ export default function Login() {
             Ainda não tem uma conta?{" "}
             <Link
               href="/signup"
-              className="font-bold text-indigo-600 hover:text-indigo-500"
+              className="font-bold text-green-600 hover:text-green-500"
             >
               Crie uma conta
             </Link>
           </div>
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   );
 }

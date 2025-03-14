@@ -14,7 +14,6 @@ const urlEndpoint = process.env.NEXT_PUBLIC_URL_ENDPOINT;
 const SearchButton = () => {
   const [url, setUrl] = useState("");
   const router = useRouter();
-  const [isDeepSearch, setIsDeepSearch] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
   const handleImageClick = () => {
@@ -26,9 +25,7 @@ const SearchButton = () => {
 
   const handleSearch = () => {
     if (!url) return;
-    router.push(
-      `/search?query=${encodeURIComponent(url)}&deep=${isDeepSearch}`
-    );
+    router.push(`/search?query=${encodeURIComponent(url)}`);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -69,11 +66,6 @@ const SearchButton = () => {
 
       {/* Search Container */}
       <div className="w-full max-w-3xl relative">
-        {/* Glow Effects */}
-        <div
-          className={`absolute -inset-0.5 bg-gradient-to-r from-[#86EFAC] to-[#7ECD2C] rounded-2xl blur-lg transition-opacity`}
-        ></div>
-
         {/* Search Bar */}
         <div className="relative bg-white shadow-lg rounded-2xl p-2 border border-gray-200">
           <div className="flex items-center gap-2">
@@ -146,22 +138,6 @@ const SearchButton = () => {
                 </svg>
               </button>
             </div>
-          </div>
-
-          {/* Deep Search Toggle */}
-          <div className="px-4 sm:px-6 py-2 flex items-center gap-2 border-t border-gray-200 mt-2">
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isDeepSearch}
-                onChange={(e) => setIsDeepSearch(e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#7ECD2C]"></div>
-            </label>
-            <span className="text-gray-600 text-xs sm:text-sm">
-              Busca avançada
-            </span>
           </div>
         </div>
       </div>

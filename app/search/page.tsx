@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import RecomendationCard from "../components/RecomendationCard";
-import Recommended from "../components/Recommended";
+import { seeds, Seed } from "../shared/seeds";
 
 const SearchContent = () => {
   const router = useRouter();
@@ -11,6 +11,53 @@ const SearchContent = () => {
   const [searchQuery, setSearchQuery] = useState(
     searchParams.get("query") || ""
   );
+  const [searchResults, setSearchResults] = useState<Seed[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Filter seeds based on search query
+  useEffect(() => {
+    const query = searchParams.get("query") || "";
+
+    if (!query) {
+      setSearchResults(seeds);
+      return;
+    }
+
+    setIsSearching(true);
+
+    // Filter seeds that match the query in name, description, or other relevant fields
+    const searchTerms = query.toLowerCase().split(" ");
+
+    // First, find seeds that match the query in the name field
+    const nameMatches = seeds.filter((seed) => {
+      return searchTerms.some((term) => seed.name.toLowerCase().includes(term));
+    });
+
+    // Then, find seeds that match in other fields but not in name
+    const otherMatches = seeds.filter((seed) => {
+      // Skip seeds that already matched by name
+      if (nameMatches.some((match) => match.id === seed.id)) {
+        return false;
+      }
+
+      return searchTerms.some(
+        (term) =>
+          seed.description.toLowerCase().includes(term) ||
+          seed.origin.toLowerCase().includes(term) ||
+          seed.season.toLowerCase().includes(term) ||
+          seed.soil_type.toLowerCase().includes(term) ||
+          seed.companion_plants.some((plant) =>
+            plant.toLowerCase().includes(term)
+          )
+      );
+    });
+
+    // Combine the results, with name matches first
+    const filteredSeeds = [...nameMatches, ...otherMatches];
+
+    setSearchResults(filteredSeeds);
+    setIsSearching(false);
+  }, [searchParams]);
 
   const handleSearch = () => {
     if (!searchQuery) return;
@@ -67,7 +114,52 @@ const SearchContent = () => {
 
       {/* Search Results Container */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <Recommended />
+        {isSearching ? (
+          <div className="text-center py-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#7ECD2C]"></div>
+            <p className="mt-2 text-gray-600">Buscando...</p>
+          </div>
+        ) : (
+          <div className="mb-2 text-center">
+            {searchParams.get("query") && (
+              <h2 className="text-xl font-semibold mb-6 text-gray-800">
+                Resultados para "{searchParams.get("query")}"
+              </h2>
+            )}
+
+            {searchResults.length === 0 ? (
+              <div className="text-gray-500 py-16">
+                <p className="text-xl mb-2">Nenhum resultado encontrado</p>
+                <p className="text-gray-400">Tente buscar por outros termos</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 mx-auto px-2 w-full max-w-[1200px] mb-8">
+                {searchResults.map((seed, index) => (
+                  <div key={seed.id || `seed-${seed.name}-${index}`}>
+                    <RecomendationCard
+                      seedInfo={{
+                        id: seed.id,
+                        img: seed.img,
+                        name: seed.name,
+                        germination_rate: seed.germination_rate,
+                        seed_count: seed.seed_count,
+                        origin: seed.origin,
+                        season: seed.season,
+                        url: seed.url,
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {searchResults.length > 0 && (
+              <div className="text-gray-500 mb-32">
+                Você viu todos os resultados disponíveis!
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,88 +1,75 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../contexts/AuthContext";
-import Image from "next/image";
 
 const LoginButton = () => {
+  const router = useRouter();
   const { user, signOut } = useAuth();
 
-  // Function to get user's display name
-  const getUserDisplayName = () => {
-    if (!user) return "";
-
-    // Try to get name from user metadata if available
-    if (user.user_metadata?.full_name) return user.user_metadata.full_name;
-    if (user.user_metadata?.name) return user.user_metadata.name;
-
-    // Fall back to email (show only part before @)
-    if (user.email) {
-      const emailParts = user.email.split("@");
-      return emailParts[0];
-    }
-
-    return "User";
+  const handleLogin = () => {
+    router.push("/login");
   };
 
-  // If user is logged in, show profile button that redirects to profile page
-  if (user) {
-    const displayName = getUserDisplayName();
-    const hasProfileImage = user.user_metadata?.avatar_url;
+  const handleLogout = async () => {
+    await signOut();
+  };
 
-    return (
-      <div className="absolute top-4 lg:top-24 lg:right-8 right-4 z-10">
-        <Link href="/profile">
-          <button className="border-2 border-gray text-black font-semibold py-2 px-6 rounded-full transition-all duration-300 flex items-center">
-            <span className="mr-2">{displayName}</span>
-            {hasProfileImage ? (
-              <Image
-                src={user.user_metadata.avatar_url}
-                alt="Profile"
-                width={24}
-                height={24}
-                className="rounded-full"
-              />
-            ) : (
-              <svg
-                className="w-5 h-5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            )}
-          </button>
-        </Link>
-      </div>
-    );
-  }
-
-  // If user is not logged in, show login button
   return (
-    <div className="absolute top-4 lg:top-24 lg:right-8 right-4 z-10">
-      <Link href="/login">
-        <button className="bg-[#3042FB] hover:bg-[#4c5bff] text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 flex items-center">
-          <span>Entrar</span>
+    <div className="absolute top-4 right-4 md:top-6 md:right-6">
+      {user ? (
+        <div className="flex items-center gap-4">
+          <Link
+            href="/profile"
+            className="text-[#7DCB2D] hover:text-[#9ae44a] font-semibold flex items-center gap-2"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
+            </svg>
+            Meu Perfil
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="text-[#7DCB2D] hover:text-[#9ae44a] font-medium"
+          >
+            Sair
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={handleLogin}
+          className="text-[#7DCB2D] hover:text-[#9ae44a] font-medium flex items-center gap-2"
+        >
           <svg
-            className="w-4 h-4 ml-2"
-            fill="currentColor"
-            viewBox="0 0 20 20"
             xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
           >
             <path
-              fillRule="evenodd"
-              d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-              clipRule="evenodd"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
             />
           </svg>
+          Entrar
         </button>
-      </Link>
+      )}
     </div>
   );
 };
