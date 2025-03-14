@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -19,7 +19,13 @@ interface ComparisonResults {
   allResults: SeedMatch[];
 }
 
-const ImageResultsPage = () => {
+// Format similarity score as percentage
+const formatSimilarity = (score: number) => {
+  return `${Math.round(score * 100)}%`;
+};
+
+// Create a separate client component that uses useSearchParams
+const ImageResultsContent = () => {
   const searchParams = useSearchParams();
   const [results, setResults] = useState<ComparisonResults | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,11 +49,6 @@ const ImageResultsPage = () => {
       setLoading(false);
     }
   }, [searchParams]);
-
-  // Format similarity score as percentage
-  const formatSimilarity = (score: number) => {
-    return `${Math.round(score * 100)}%`;
-  };
 
   if (loading) {
     return (
@@ -265,6 +266,25 @@ const ImageResultsPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-green-500 mx-auto"></div>
+      <p className="mt-4 text-gray-600">Carregando...</p>
+    </div>
+  </div>
+);
+
+// Main page component with Suspense boundary
+const ImageResultsPage = () => {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <ImageResultsContent />
+    </Suspense>
   );
 };
 
