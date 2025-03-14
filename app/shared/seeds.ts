@@ -23,7 +23,7 @@ export const seeds: Seed[] = [
   {
     id: "001",
     img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269308/19ab542e3b.jpg",
-    name: "Semente de Girassol",
+    name: "Girassol",
     germination_rate: "90%",
     seed_count: "30",
     origin: "Brasil",
@@ -43,7 +43,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "002",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269309/tomate-cereja.jpg",
+    img: "https://static.wixstatic.com/media/b9cbc0_fa95cbbb436d40958237b9c28289d024~mv2.png/v1/fill/w_480,h_452,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/b9cbc0_fa95cbbb436d40958237b9c28289d024~mv2.png",
     name: "Tomate Cereja",
     germination_rate: "85%",
     seed_count: "25",
@@ -64,7 +64,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "003",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269310/alface-crespa.jpg",
+    img: "https://images.fineartamerica.com/images/artworkimages/mediumlarge/1/head-lettuce-seeds-scimat.jpg",
     name: "Alface Crespa",
     germination_rate: "95%",
     seed_count: "100",
@@ -85,7 +85,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "004",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269311/cenoura.jpg",
+    img: "https://curriotthillnursery.co.uk/cdn/shop/products/Untitleddesign_83.png?v=1676661112&width=1445",
     name: "Cenoura",
     germination_rate: "80%",
     seed_count: "200",
@@ -106,7 +106,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "005",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269312/manjericao.jpg",
+    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdBrB4Ld6Tb7FrGQkIkgq2ZeT6msRJ2bODXg&s",
     name: "Manjericão",
     germination_rate: "85%",
     seed_count: "150",
@@ -127,7 +127,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "006",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269313/rucula.jpg",
+    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPEQOUXHayLlvIXovghkLyPvMEkaKq9GXPYw&s",
     name: "Rúcula",
     germination_rate: "90%",
     seed_count: "120",
@@ -148,7 +148,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "007",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269314/coentro.jpg",
+    img: "https://m.media-amazon.com/images/I/81l6QtCjoEL.jpg",
     name: "Coentro",
     germination_rate: "75%",
     seed_count: "100",
@@ -169,7 +169,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "008",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269315/pimentao.jpg",
+    img: "https://ndgbotanicals.com/wp-content/uploads/2016/08/White-Habanero-1-7051-scaled.jpg",
     name: "Pimentão",
     germination_rate: "80%",
     seed_count: "30",
@@ -190,7 +190,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "009",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269316/abobrinha.jpg",
+    img: "https://www.simplygro.com/cdn/shop/products/the-old-farmers-almanac-premium-seed-packet-zucchini-seeds_1000x1000.jpg?v=1698763646",
     name: "Abobrinha",
     germination_rate: "85%",
     seed_count: "20",
@@ -211,7 +211,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "010",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269317/beterraba.jpg",
+    img: "https://hancockseed.com/cdn/shop/products/SugarBeetSeed-1200px_1200x1200.jpg?v=1711050868",
     name: "Beterraba",
     germination_rate: "75%",
     seed_count: "100",
@@ -232,7 +232,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "011",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269318/pepino.jpg",
+    img: "https://www.simplygro.com/cdn/shop/products/purely-organic-products-seed-packet-marketmore-76-cucumber-seeds_1000x1000.jpg?v=1669082306",
     name: "Pepino",
     germination_rate: "90%",
     seed_count: "25",
@@ -253,7 +253,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "012",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269319/espinafre.jpg",
+    img: "https://m.media-amazon.com/images/I/716Z15xNs+L._AC_UF894,1000_QL80_.jpg",
     name: "Espinafre",
     germination_rate: "80%",
     seed_count: "150",
@@ -274,7 +274,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "013",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269320/cebolinha.jpg",
+    img: "https://tavazo.us/cdn/shop/products/image_fa44b1b6-b56d-43f1-8ada-ef12c40bc617.png?v=1655417180",
     name: "Cebolinha",
     germination_rate: "85%",
     seed_count: "200",
@@ -295,7 +295,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "014",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269321/salsa.jpg",
+    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWcC04kFvkyyLSyrXFz30CPEP73R2n96jZUQ&s",
     name: "Salsa",
     germination_rate: "70%",
     seed_count: "200",
@@ -316,7 +316,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "015",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269322/rabanete.jpg",
+    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUmvUuFuJO8fGadVL5XHGZd6r8IZsklYPdWQ&s",
     name: "Rabanete",
     germination_rate: "95%",
     seed_count: "150",
@@ -337,7 +337,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "016",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269323/couve.jpg",
+    img: "https://www.simplygro.com/cdn/shop/products/purely-organic-products-seed-packet-vates-blue-scotch-curled-kale-seeds_1000x1000.jpg?v=1681236759",
     name: "Couve",
     germination_rate: "85%",
     seed_count: "100",
@@ -358,7 +358,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "017",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269324/hortelã.jpg",
+    img: "https://m.media-amazon.com/images/I/71A8b4w+wQL._AC_UF350,350_QL80_.jpg",
     name: "Hortelã",
     germination_rate: "75%",
     seed_count: "200",
@@ -379,7 +379,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "018",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269325/alecrim.jpg",
+    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSyJ7JiIO98PEZ1PSXpySpNdxI54UihvgslA&s",
     name: "Alecrim",
     germination_rate: "70%",
     seed_count: "100",
@@ -400,7 +400,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "019",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269326/morango.jpg",
+    img: "https://www.cord360.com/Data/Images/205/ProductImage/strawberry_seeds.jpeg",
     name: "Morango",
     germination_rate: "80%",
     seed_count: "30",
@@ -421,7 +421,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "020",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269327/capim-limao.jpg",
+    img: "https://m.media-amazon.com/images/I/61dr1slmr6L._AC_UF1000,1000_QL80_.jpg",
     name: "Capim-Limão",
     germination_rate: "75%",
     seed_count: "100",
@@ -442,7 +442,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "021",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269328/milho.jpg",
+    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkyRCeCTK27mUgFn9t0PrJIc-kWHsdsBCvGg&s",
     name: "Milho",
     germination_rate: "90%",
     seed_count: "50",
@@ -463,7 +463,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "022",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269329/feijao.jpg",
+    img: "https://sowtrueseed.com/cdn/shop/products/Bean_Bush_Provider_CD@2x.jpg?v=1571732090",
     name: "Feijão",
     germination_rate: "85%",
     seed_count: "40",
@@ -484,7 +484,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "023",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269330/abobora.jpg",
+    img: "https://satopradhan.com/cdn/shop/products/pumpkin-seeds-edible-raw-unsalted-kernels-200g-high-quality-natural-and-organic-without-additives-satopradhan-1-13266932957334_1200x1200_crop_center.jpg?v=1696574810",
     name: "Abóbora",
     germination_rate: "90%",
     seed_count: "15",
@@ -505,7 +505,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "024",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269331/quiabo.jpg",
+    img: "https://cdn.makane.com/20210708-store-ko3v/products/13821740/93334484.jpg",
     name: "Quiabo",
     germination_rate: "75%",
     seed_count: "50",
@@ -526,7 +526,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "025",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269332/berinjela.jpg",
+    img: "https://5.imimg.com/data5/ZP/DH/ME/SELLER-18265023/greenhouse-striped-eggplant-seed.jpg",
     name: "Berinjela",
     germination_rate: "80%",
     seed_count: "30",
@@ -547,7 +547,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "026",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269333/repolho.jpg",
+    img: "https://treeseeds.ca/cdn/shop/products/cabbage_1024x1024.png?v=1534111753",
     name: "Repolho",
     germination_rate: "85%",
     seed_count: "100",
@@ -568,7 +568,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "027",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269334/brocolis.jpg",
+    img: "https://www.microgreen-shop.com/wp-content/uploads/2018/04/1-2.png",
     name: "Brócolis",
     germination_rate: "90%",
     seed_count: "100",
@@ -589,7 +589,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "028",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269335/couve-flor.jpg",
+    img: "https://m.media-amazon.com/images/I/41mAU-9k6hL._AC_UF350,350_QL80_.jpg",
     name: "Couve-flor",
     germination_rate: "85%",
     seed_count: "100",
@@ -610,7 +610,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "029",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269336/ervilha.jpg",
+    img: "https://patriotseeds.com/cdn/shop/products/Green-Pea-3_1200x1200.jpg?v=1634140516",
     name: "Ervilha",
     germination_rate: "90%",
     seed_count: "50",
@@ -631,7 +631,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "030",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269337/cebola.jpg",
+    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQD946_hyB3e2EYPYbX2E_L-RvaqhyqWQg7hnKowvWGuQRybq9VrziNxGB0VA4JuUkt7L8&usqp=CAU",
     name: "Cebola",
     germination_rate: "80%",
     seed_count: "200",
@@ -652,7 +652,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "031",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269338/alho.jpg",
+    img: "https://seeds.ca/d/?n=ebulletin%2F2016%2F08%2Fbulbils.jpg",
     name: "Alho",
     germination_rate: "85%",
     seed_count: "10 bulbilhos",
@@ -673,7 +673,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "032",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269339/tomilho.jpg",
+    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRlQcFBW2Fvq79vDYMfGmvrL1ogzbX3noMrTw&s",
     name: "Tomilho",
     germination_rate: "75%",
     seed_count: "200",
@@ -694,7 +694,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "033",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269340/oregano.jpg",
+    img: "https://m.media-amazon.com/images/I/51toArpuGdL.jpg",
     name: "Orégano",
     germination_rate: "70%",
     seed_count: "200",
@@ -715,7 +715,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "034",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269341/salvia.jpg",
+    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTYaNYbw3e1Pot3bg4Eo3w0YHrrHw4IfQqIxQ&s",
     name: "Sálvia",
     germination_rate: "70%",
     seed_count: "100",
@@ -736,7 +736,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "035",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269342/melancia.jpg",
+    img: "https://m.media-amazon.com/images/I/71pFvzA-NSL.jpg",
     name: "Melancia",
     germination_rate: "85%",
     seed_count: "20",
@@ -757,7 +757,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "036",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269343/melao.jpg",
+    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHwSMsexe-f1jn15UFkFxgp4PeCm4zr40Y6A&s",
     name: "Melão",
     germination_rate: "85%",
     seed_count: "25",
@@ -778,7 +778,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "037",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269344/mostarda.jpg",
+    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXynSS0XwLs9AC5RMOUZ_ntmr14hiAaJZ5jw&s",
     name: "Mostarda",
     germination_rate: "90%",
     seed_count: "200",
@@ -799,7 +799,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "038",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269345/agriao.jpg",
+    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRIFpkLgEfpf57IINJ2mIhkVB3gPuLUZ2ZIxg&s",
     name: "Agrião",
     germination_rate: "85%",
     seed_count: "200",
@@ -820,7 +820,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "039",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269346/calendula.jpg",
+    img: "https://www.seedneeds.com/cdn/shop/files/SEEDS_571b39ca-2d27-4d20-a565-c2d787575277.jpg?v=1727497922&width=600",
     name: "Calêndula",
     germination_rate: "80%",
     seed_count: "50",
@@ -841,7 +841,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "040",
-    img: "https://cdn.awsli.com.br/600x450/2195/2195322/produto/156269347/camomila.jpg",
+    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAlVZyLD2qyAQG7_QI93Gk5zpbq4q_VowBEg&s",
     name: "Camomila",
     germination_rate: "75%",
     seed_count: "300",

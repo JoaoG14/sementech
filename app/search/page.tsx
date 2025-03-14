@@ -4,7 +4,7 @@ import React, { useState, Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import RecomendationCard from "../components/RecomendationCard";
 import { seeds, Seed } from "../shared/seeds";
-
+import NavBar from "../components/NavBar";
 const SearchContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -72,6 +72,7 @@ const SearchContent = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <NavBar />
       {/* Compact Search Header */}
       <div className="bg-gray-50">
         <div className="max-w-3xl mx-auto px-4 py-3">

@@ -148,15 +148,19 @@ const SearchButton = () => {
           Buscas populares
         </p>
         <div className="flex flex-wrap justify-center gap-2">
-          {["Hortaliças", "Orgânicas", "Flores", "Frutíferas"].map((item) => (
-            <button
-              key={item}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#E8F5D6] hover:bg-[#D5EBBA] text-[#4A7A1A] text-xs sm:text-sm transition-colors"
-              onClick={() => setUrl(item)}
-            >
-              {item}
-            </button>
-          ))}
+          {["Manjericão", "Tomate", "Alface", "Melancia", "Cenoura"].map(
+            (item) => (
+              <button
+                key={item}
+                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#E8F5D6] hover:bg-[#D5EBBA] text-[#4A7A1A] text-xs sm:text-sm transition-colors"
+                onClick={() =>
+                  router.push(`/search?query=${encodeURIComponent(item)}`)
+                }
+              >
+                {item}
+              </button>
+            )
+          )}
         </div>
       </div>
     </div>
