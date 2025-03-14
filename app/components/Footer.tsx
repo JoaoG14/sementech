@@ -36,7 +36,7 @@ const Footer = () => {
         <span className="block text-sm mb-2 text-black sm:text-center">
           © 2024{" "}
           <a href="/" className="hover:underline">
-            Sementech™
+            SEMENTEC™
           </a>
           . Todos Direitos Reservados.
         </span>
