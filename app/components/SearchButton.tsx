@@ -71,9 +71,7 @@ const SearchButton = () => {
       <div className="w-full max-w-3xl relative">
         {/* Glow Effects */}
         <div
-          className={`absolute -inset-0.5 bg-gradient-to-r from-[#86EFAC] to-[#7ECD2C] rounded-2xl blur-lg transition-opacity ${
-            !isFocused ? "opacity-100 animate-pulse" : "opacity-0"
-          }`}
+          className={`absolute -inset-0.5 bg-gradient-to-r from-[#86EFAC] to-[#7ECD2C] rounded-2xl blur-lg transition-opacity`}
         ></div>
 
         {/* Search Bar */}
