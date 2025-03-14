@@ -34,7 +34,7 @@ const Footer = () => {
         </div>
         <hr className="my-6 border-[#929292] sm:mx-auto lg:my-8" />
         <span className="block text-sm mb-2 text-black sm:text-center">
-          © 2024{" "}
+          © 2025{" "}
           <a href="/" className="hover:underline">
             SEMENTEC™
           </a>
