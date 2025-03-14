@@ -149,7 +149,24 @@ export async function POST(request: Request) {
       (a, b) => b.similarityScore - a.similarityScore
     );
 
-    return NextResponse.json(sortedResults);
+    // Categorize results based on similarity thresholds
+    const bestMatches = sortedResults.filter(
+      (item) => item.similarityScore > 0.9
+    );
+    const goodMatches = sortedResults.filter(
+      (item) => item.similarityScore > 0.8 && item.similarityScore <= 0.9
+    );
+    const possibleMatches = sortedResults.filter(
+      (item) => item.similarityScore > 0.7 && item.similarityScore <= 0.8
+    );
+
+    // Return categorized results
+    return NextResponse.json({
+      bestMatches,
+      goodMatches,
+      possibleMatches,
+      allResults: sortedResults,
+    });
   } catch (error) {
     console.error("Error in image comparison:", error);
     return NextResponse.json(
