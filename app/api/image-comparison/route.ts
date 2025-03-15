@@ -6,50 +6,27 @@ import path from "path";
 
 // Define types for embeddings and results
 type ImageEmbedding = number[];
-type FeatureExtractorOutput = {
-  data: Float32Array | number[];
-};
 
 interface SeedMatch {
   id: string;
-  name: string;
   similarityScore: number;
-  imageUrl: string;
 }
 
-// For full results with categorized matches
-interface FullSimilarityResults {
-  bestMatches: SeedMatch[];
-  goodMatches: SeedMatch[];
-  possibleMatches: SeedMatch[];
-  allResults: SeedMatch[];
+interface ComparisonResult {
+  resultId: string;
+  matches: SeedMatch[];
 }
-
-// For simplified results with just ID and similarity score
-interface SimplifiedSimilarityResults {
-  matches: { id: string; similarityScore: number }[];
-}
-
-// Union type for both result formats
-type SimilarityResults = FullSimilarityResults | SimplifiedSimilarityResults;
 
 // File system storage for results
 const RESULTS_DIR = path.join(process.cwd(), "tmp");
 
 // Ensure the results directory exists
-try {
-  if (!fs.existsSync(RESULTS_DIR)) {
-    fs.mkdirSync(RESULTS_DIR, { recursive: true });
-  }
-} catch (error) {
-  console.error("Failed to create results directory:", error);
+if (!fs.existsSync(RESULTS_DIR)) {
+  fs.mkdirSync(RESULTS_DIR, { recursive: true });
 }
 
 // Store results in a file
-const storeResults = (
-  resultId: string,
-  results: SimilarityResults
-): boolean => {
+const storeResults = (resultId: string, results: ComparisonResult): boolean => {
   try {
     const filePath = path.join(RESULTS_DIR, `${resultId}.json`);
     fs.writeFileSync(filePath, JSON.stringify(results));
@@ -73,7 +50,7 @@ const storeResults = (
 };
 
 // Retrieve results from a file
-const getResults = (resultId: string): SimilarityResults | null => {
+const getResults = (resultId: string): ComparisonResult | null => {
   try {
     const filePath = path.join(RESULTS_DIR, `${resultId}.json`);
     if (!fs.existsSync(filePath)) {
@@ -81,41 +58,25 @@ const getResults = (resultId: string): SimilarityResults | null => {
     }
 
     const data = fs.readFileSync(filePath, "utf8");
-    return JSON.parse(data) as SimilarityResults;
+    return JSON.parse(data) as ComparisonResult;
   } catch (error) {
     console.error(`Failed to retrieve results for ${resultId}:`, error);
     return null;
   }
 };
 
-// Import the transformers library at runtime
+// Load the transformers library
 const loadTransformers = async () => {
   const { pipeline } = await import("@xenova/transformers");
   return { pipeline };
 };
 
-// Process a single image and get its embedding
-const getImageEmbedding = async (
-  imageUrl: string,
-  featureExtractor: any
-): Promise<ImageEmbedding | null> => {
-  try {
-    const features = (await featureExtractor(
-      imageUrl
-    )) as FeatureExtractorOutput;
-    return Array.from(features.data);
-  } catch (error) {
-    console.error(`Error extracting features from ${imageUrl}:`, error);
-    return null;
-  }
-};
-
 // Calculate cosine similarity between two vectors
 const cosineSimilarity = (
-  vecA: ImageEmbedding | null,
-  vecB: ImageEmbedding | null
+  vecA: ImageEmbedding,
+  vecB: ImageEmbedding
 ): number => {
-  if (!vecA || !vecB || vecA.length !== vecB.length) return 0;
+  if (vecA.length !== vecB.length) return 0;
 
   let dotProduct = 0;
   let normA = 0;
@@ -132,126 +93,87 @@ const cosineSimilarity = (
   return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 };
 
-// Process seeds in batches to avoid memory issues
-const processBatch = async (
-  seeds: any[],
-  uploadedImageEmbedding: ImageEmbedding,
-  featureExtractor: any,
-  startIndex: number,
-  batchSize: number
-) => {
-  const endIndex = Math.min(startIndex + batchSize, seeds.length);
-  const batch = seeds.slice(startIndex, endIndex);
+// Process image comparison
+const processImageComparison = async (
+  imageUrl: string
+): Promise<ComparisonResult> => {
+  // Load transformers
+  const { pipeline } = await loadTransformers();
 
-  const results = await Promise.all(
-    batch.map(async (seed) => {
-      try {
-        // Extract features from seed image
-        const seedFeatures = (await featureExtractor(
-          seed.img
-        )) as FeatureExtractorOutput;
-        const seedImageEmbedding = Array.from(seedFeatures.data);
-
-        // Calculate similarity
-        const similarity = cosineSimilarity(
-          uploadedImageEmbedding,
-          seedImageEmbedding
-        );
-
-        return {
-          seed,
-          similarity,
-        };
-      } catch (error) {
-        console.error(`Error processing seed ${seed.id}:`, error);
-        return {
-          seed,
-          similarity: 0,
-        };
-      }
-    })
+  // Create feature extractor
+  const featureExtractor = await pipeline(
+    "image-feature-extraction",
+    "Xenova/clip-vit-base-patch32"
   );
 
-  return results;
-};
+  // Extract features from uploaded image
+  const uploadedFeatures = await featureExtractor(imageUrl);
+  const uploadedEmbedding = Array.from(uploadedFeatures.data);
 
-// Process similarity in parallel with early exit conditions
-const processParallelSimilarity = async (
-  seeds: any[],
-  imageUrl: string,
-  featureExtractor: any
-): Promise<FullSimilarityResults> => {
-  const results: FullSimilarityResults = {
-    bestMatches: [],
-    goodMatches: [],
-    possibleMatches: [],
-    allResults: [],
-  };
-
-  const BATCH_SIZE = 5; // Process 5 seeds simultaneously
-  const MAX_SEEDS = 45;
+  // Process seeds in batches to avoid memory issues
+  const BATCH_SIZE = 10;
+  const MAX_SEEDS = 50;
   const totalSeeds = Math.min(seeds.length, MAX_SEEDS);
 
-  // Get image embedding for uploaded image once
-  const uploadedFeatures = (await featureExtractor(
-    imageUrl
-  )) as FeatureExtractorOutput;
-  const uploadedImageEmbedding = Array.from(uploadedFeatures.data);
+  const matches: SeedMatch[] = [];
 
-  // Process seeds in batches
   for (let i = 0; i < totalSeeds; i += BATCH_SIZE) {
-    const batchResults = await processBatch(
-      seeds,
-      uploadedImageEmbedding,
-      featureExtractor,
-      i,
-      BATCH_SIZE
+    const batchEnd = Math.min(i + BATCH_SIZE, totalSeeds);
+    const batch = seeds.slice(i, batchEnd);
+
+    // Process batch in parallel
+    const batchResults = await Promise.all(
+      batch.map(async (seed) => {
+        try {
+          // Extract features from seed image
+          const seedFeatures = await featureExtractor(seed.img);
+          const seedEmbedding = Array.from(seedFeatures.data);
+
+          // Calculate similarity
+          const similarity = cosineSimilarity(uploadedEmbedding, seedEmbedding);
+
+          return {
+            id: seed.id,
+            similarityScore: similarity,
+          };
+        } catch (error) {
+          console.error(`Error processing seed ${seed.id}:`, error);
+          return {
+            id: seed.id,
+            similarityScore: 0,
+          };
+        }
+      })
     );
 
-    // Categorize results
-    for (const { seed, similarity } of batchResults) {
-      // Add similarity score to the seed object
-      const seedWithSimilarity: SeedMatch = {
-        id: seed.id,
-        name: seed.name,
-        similarityScore: similarity,
-        imageUrl: seed.img,
-      };
+    // Add batch results to matches
+    matches.push(...batchResults);
 
-      // Categorize based on similarity thresholds matching the original code
-      if (similarity > 0.9) {
-        results.bestMatches.push(seedWithSimilarity);
-      } else if (similarity > 0.87) {
-        results.goodMatches.push(seedWithSimilarity);
-      } else if (similarity > 0.67) {
-        results.possibleMatches.push(seedWithSimilarity);
-      }
-
-      // Add to all results
-      results.allResults.push(seedWithSimilarity);
-    }
-
-    // Early exit condition - if we have enough good matches after processing 30+ seeds
-    if (i > 30 && (results.goodMatches.length > 2 || i > 60)) {
+    // Early exit if we have enough good matches
+    const goodMatches = matches.filter((m) => m.similarityScore > 0.85);
+    if (i > 30 && goodMatches.length > 3) {
       break;
     }
   }
 
-  // Sort all result arrays by similarity score (highest first)
-  results.bestMatches.sort((a, b) => b.similarityScore - a.similarityScore);
-  results.goodMatches.sort((a, b) => b.similarityScore - a.similarityScore);
-  results.possibleMatches.sort((a, b) => b.similarityScore - a.similarityScore);
-  results.allResults.sort((a, b) => b.similarityScore - a.similarityScore);
+  // Sort matches by similarity score (highest first)
+  matches.sort((a, b) => b.similarityScore - a.similarityScore);
 
-  return results;
+  // Generate a unique ID for the results
+  const resultId = crypto.randomUUID();
+
+  return {
+    resultId,
+    matches: matches.slice(0, 20), // Return top 20 matches
+  };
 };
 
+// POST endpoint for image comparison
 export async function POST(request: Request) {
   try {
     const { imageUrl } = await request.json();
 
     if (!imageUrl) {
-      console.error("POST request missing imageUrl");
       return NextResponse.json(
         { error: "Image URL is required" },
         { status: 400 }
@@ -263,83 +185,20 @@ export async function POST(request: Request) {
       imageUrl.substring(0, 50) + "..."
     );
 
-    // Check if the results directory exists and create it if needed
-    if (!fs.existsSync(RESULTS_DIR)) {
-      console.log(`Creating results directory: ${RESULTS_DIR}`);
-      try {
-        fs.mkdirSync(RESULTS_DIR, { recursive: true });
-      } catch (dirError) {
-        const errorMessage =
-          dirError instanceof Error ? dirError.message : String(dirError);
-        console.error(`Failed to create results directory: ${errorMessage}`);
-        return NextResponse.json(
-          {
-            error: "Storage system error",
-            details: `Failed to create results directory: ${errorMessage}`,
-          },
-          { status: 500 }
-        );
-      }
-    }
+    // Process image comparison
+    const result = await processImageComparison(imageUrl);
 
-    // Load the transformers library
-    console.log("Loading transformers library...");
-    const { pipeline } = await loadTransformers();
-
-    // Create the feature extractor
-    console.log("Creating feature extractor...");
-    const featureExtractor = await pipeline(
-      "image-feature-extraction",
-      "Xenova/clip-vit-base-patch32"
-    );
-
-    // Process similarity with the optimized parallel function
-    console.log("Processing image similarity...");
-    const results = await processParallelSimilarity(
-      seeds,
-      imageUrl,
-      featureExtractor
-    );
-
-    console.log(
-      `Found ${results.allResults.length} matches (${results.bestMatches.length} best, ${results.goodMatches.length} good, ${results.possibleMatches.length} possible)`
-    );
-
-    // Generate a unique ID for the results
-    const resultId = crypto.randomUUID();
-    console.log(`Generated result ID: ${resultId}`);
-
-    // Create a simplified version of the results with just id and similarity score
-    const simplifiedMatches = results.allResults.map((match) => ({
-      id: match.id,
-      similarityScore: match.similarityScore,
-    }));
-
-    // Store the simplified results in a file
-    console.log(`Storing simplified results to file...`);
-    const simplifiedResults: SimplifiedSimilarityResults = {
-      matches: simplifiedMatches,
-    };
-    const stored = storeResults(resultId, simplifiedResults);
+    // Store results
+    const stored = storeResults(result.resultId, result);
 
     if (!stored) {
-      console.error(`Failed to store results for ID: ${resultId}`);
       return NextResponse.json(
-        {
-          error: "Failed to store results",
-          details: "Could not write results to storage",
-        },
+        { error: "Failed to store results" },
         { status: 500 }
       );
     }
 
-    console.log(`Successfully stored results with ID: ${resultId}`);
-
-    // Return only the result ID and simplified matches
-    return NextResponse.json({
-      resultId,
-      matches: simplifiedMatches,
-    });
+    return NextResponse.json(result);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("Error in image comparison:", errorMessage);
@@ -354,44 +213,16 @@ export async function POST(request: Request) {
   }
 }
 
-// Add a GET endpoint to retrieve results by ID
+// GET endpoint to retrieve results by ID
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const resultId = searchParams.get("id");
 
     if (!resultId) {
-      console.error("GET request missing result ID");
       return NextResponse.json(
         { error: "Result ID is required" },
         { status: 400 }
-      );
-    }
-
-    console.log(`Retrieving results for ID: ${resultId}`);
-
-    // Check if the results directory exists
-    if (!fs.existsSync(RESULTS_DIR)) {
-      console.error(`Results directory does not exist: ${RESULTS_DIR}`);
-      return NextResponse.json(
-        {
-          error: "Storage system error",
-          details: "Results directory not found",
-        },
-        { status: 500 }
-      );
-    }
-
-    // Check if the file exists before trying to read it
-    const filePath = path.join(RESULTS_DIR, `${resultId}.json`);
-    if (!fs.existsSync(filePath)) {
-      console.error(`Results file not found: ${filePath}`);
-      return NextResponse.json(
-        {
-          error: "Results not found or expired",
-          details: "The requested result ID does not exist in storage",
-        },
-        { status: 404 }
       );
     }
 
@@ -399,19 +230,9 @@ export async function GET(request: Request) {
     const results = getResults(resultId);
 
     if (!results) {
-      console.error(`Failed to parse results for ID: ${resultId}`);
-      return NextResponse.json(
-        {
-          error: "Results could not be retrieved",
-          details: "The result file exists but could not be parsed",
-        },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Results not found" }, { status: 404 });
     }
 
-    console.log(`Successfully retrieved results for ID: ${resultId}`);
-
-    // Return the simplified results
     return NextResponse.json(results);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

@@ -1,23 +1,35 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { apiBaseUrl } from "../shared";
-import { ImageKitProvider, IKImage, IKUpload } from "imagekitio-next";
+import { ImageKitProvider, IKUpload } from "imagekitio-next";
 import toast from "react-hot-toast";
 
 const publicKey = process.env.NEXT_PUBLIC_PUBLIC_KEY;
 const urlEndpoint = process.env.NEXT_PUBLIC_URL_ENDPOINT;
 
 const SearchButton = () => {
-  const [url, setUrl] = useState("");
-  const router = useRouter();
-  const [isFocused, setIsFocused] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
+  // Handle text search
+  const handleSearch = () => {
+    if (!searchQuery.trim()) return;
+    router.push(`/search?query=${encodeURIComponent(searchQuery.trim())}`);
+  };
+
+  // Handle Enter key press
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  // Handle image upload button click
   const handleImageClick = () => {
     const imageInput = document.getElementById("imageInput");
     if (imageInput) {
@@ -25,53 +37,33 @@ const SearchButton = () => {
     }
   };
 
-  const handleSearch = () => {
-    if (!url) return;
-    router.push(`/search?query=${encodeURIComponent(url)}`);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
-  };
-
+  // ImageKit authentication
   const authenticator = async () => {
     try {
-      // Use relative URL if apiBaseUrl is not defined
-      const authUrl = apiBaseUrl
-        ? `${apiBaseUrl}/api/imagekitauth`
-        : "/api/imagekitauth";
-      const response = await fetch(authUrl);
-
-      if (!response.ok)
+      const response = await fetch("/api/imagekitauth");
+      if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
-
-      const data = await response.json();
-      return data;
+      }
+      return await response.json();
     } catch (error) {
       console.error("Authentication failed:", error);
+      setError("Falha na autenticação para upload de imagem");
       return null;
     }
   };
 
-  // Handle image upload success
+  // Handle successful image upload
   const handleUploadSuccess = async (res: any) => {
-    setIsLoading(true);
-    setError(null);
-
     try {
+      setIsUploading(false);
+      setIsProcessing(true);
+      setError(null);
+
       // Get the uploaded image URL
       const imageUrl = res.url;
 
-      // Use relative URL if apiBaseUrl is not defined
-      const apiUrl = apiBaseUrl
-        ? `${apiBaseUrl}/api/image-comparison`
-        : `/api/image-comparison`;
-
-      console.log("Sending image to API:", apiUrl);
-
-      const response = await fetch(apiUrl, {
+      // Call the image comparison API
+      const response = await fetch("/api/image-comparison", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -81,49 +73,33 @@ const SearchButton = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("API response error:", response.status, errorText);
         throw new Error(
           `HTTP error! status: ${response.status}, details: ${errorText}`
         );
       }
 
       const data = await response.json();
-      console.log("API response:", data);
 
       if (!data.resultId) {
         throw new Error("No result ID returned from API");
       }
 
-      // Show a success message based on the number of matches
-      if (data.matches && data.matches.length > 0) {
-        const totalMatches = data.matches.length;
-        const bestMatches = data.matches.filter(
-          (m: { similarityScore: number }) => m.similarityScore > 0.9
-        ).length;
-        const goodMatches = data.matches.filter(
-          (m: { similarityScore: number }) =>
-            m.similarityScore > 0.87 && m.similarityScore <= 0.9
-        ).length;
+      // Show success message
+      const matchCount = data.matches.length;
+      const goodMatches = data.matches.filter(
+        (m: { similarityScore: number }) => m.similarityScore > 0.85
+      ).length;
 
-        const matchMessage =
-          bestMatches > 0
-            ? `Encontramos ${bestMatches} correspondências excelentes!`
-            : goodMatches > 0
-            ? `Encontramos ${goodMatches} boas correspondências!`
-            : totalMatches > 0
-            ? `Encontramos ${totalMatches} possíveis correspondências.`
-            : "Análise concluída. Redirecionando para os resultados...";
+      const message =
+        goodMatches > 0
+          ? `Encontramos ${goodMatches} boas correspondências!`
+          : matchCount > 0
+          ? `Encontramos ${matchCount} possíveis correspondências.`
+          : "Análise concluída. Redirecionando para os resultados...";
 
-        toast.success(matchMessage, {
-          duration: 3000,
-        });
-      } else {
-        toast.success("Imagem processada com sucesso!", {
-          duration: 2000,
-        });
-      }
+      toast.success(message, { duration: 3000 });
 
-      // Redirect to results page with the result ID
+      // Redirect to results page
       router.push(`/search/image-results?id=${data.resultId}`);
     } catch (err) {
       console.error("Error during image comparison:", err);
@@ -136,27 +112,22 @@ const SearchButton = () => {
         duration: 5000,
       });
     } finally {
-      setIsLoading(false);
+      setIsProcessing(false);
     }
+  };
+
+  // Handle upload error
+  const handleUploadError = (err: any) => {
+    console.error("Upload error:", err);
+    setError("Erro ao enviar a imagem. Por favor, tente novamente.");
+    setIsUploading(false);
+    toast.error("Falha no upload da imagem. Por favor, tente novamente.", {
+      duration: 5000,
+    });
   };
 
   return (
     <div className="flex flex-col items-center justify-center w-full px-4 py-6">
-      <style jsx global>{`
-        @keyframes spin {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-
-        .animation-delay-150 {
-          animation-delay: 150ms;
-        }
-      `}</style>
-
       {/* Logo */}
       <div className="text-center">
         <Image
@@ -179,23 +150,22 @@ const SearchButton = () => {
           <div className="flex items-center gap-2">
             <input
               type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              onFocus={() => setIsFocused(true)}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Buscar por sementes, plantas ou culturas..."
               className="flex-1 bg-transparent px-4 sm:px-6 py-3 text-gray-800 placeholder-gray-400 text-base sm:text-lg focus:outline-none"
+              disabled={isUploading || isProcessing}
             />
             <div className="flex items-center gap-2">
+              {/* Image Upload Button */}
               <button
                 onClick={handleImageClick}
                 className="p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group border border-gray-200"
                 title="Enviar imagem de planta para identificação"
-                disabled={isUploading || isLoading}
+                disabled={isUploading || isProcessing}
               >
-                {isUploading ? (
-                  <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-[4px] border-gray-200 border-t-gray-600 border-l-gray-600 animate-spin"></div>
-                ) : isLoading ? (
+                {isUploading || isProcessing ? (
                   <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-[4px] border-gray-200 border-t-gray-600 border-l-gray-600 animate-spin"></div>
                 ) : (
                   <svg
@@ -214,11 +184,13 @@ const SearchButton = () => {
                   </svg>
                 )}
               </button>
+
+              {/* Search Button */}
               <button
                 onClick={handleSearch}
                 className="p-3 rounded-xl bg-gradient-to-r from-[#7ECD2C] to-[#9BDE5A] hover:from-[#6CB925] hover:to-[#8AC94D] transition-all shadow-sm hover:shadow-md"
                 title="Buscar"
-                disabled={isLoading}
+                disabled={isUploading || isProcessing}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -239,12 +211,14 @@ const SearchButton = () => {
           </div>
         </div>
 
+        {/* Error Message */}
         {error && (
           <div className="mt-2 text-sm text-red-600 bg-red-50 p-2 rounded">
             {error}
           </div>
         )}
 
+        {/* Hidden ImageKit Upload Component */}
         <ImageKitProvider
           publicKey={publicKey}
           urlEndpoint={urlEndpoint}
@@ -256,20 +230,14 @@ const SearchButton = () => {
               className="hidden"
               fileName="seed_image.jpg"
               onSuccess={handleUploadSuccess}
-              onError={(err) => {
-                console.error("Upload error:", err);
-                setError(
-                  "Erro ao enviar a imagem. Por favor, tente novamente."
-                );
-                setIsUploading(false);
-              }}
+              onError={handleUploadError}
               onChange={() => setIsUploading(true)}
             />
           </div>
         </ImageKitProvider>
       </div>
 
-      {/* Example Searches */}
+      {/* Popular Searches */}
       <div className="mt-6 sm:mt-8 text-center px-4">
         <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4">
           Buscas populares
@@ -283,6 +251,7 @@ const SearchButton = () => {
                 onClick={() =>
                   router.push(`/search?query=${encodeURIComponent(item)}`)
                 }
+                disabled={isUploading || isProcessing}
               >
                 {item}
               </button>

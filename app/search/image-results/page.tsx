@@ -2,22 +2,23 @@
 
 import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
-import { apiBaseUrl } from "../../shared";
 
 interface SeedMatch {
   id: string;
-  name: string;
   similarityScore: number;
-  imageUrl: string;
 }
 
-interface ComparisonResults {
-  bestMatches: SeedMatch[];
-  goodMatches: SeedMatch[];
-  possibleMatches: SeedMatch[];
-  allResults: SeedMatch[];
+interface ComparisonResult {
+  resultId: string;
+  matches: SeedMatch[];
+}
+
+interface SeedData {
+  id: string;
+  name: string;
+  img: string;
+  description: string;
 }
 
 // Format similarity score as percentage
@@ -25,10 +26,24 @@ const formatSimilarity = (score: number) => {
   return `${Math.round(score * 100)}%`;
 };
 
-// Create a separate client component that uses useSearchParams
+// Categorize matches based on similarity score
+const categorizeMatches = (matches: SeedMatch[]) => {
+  return {
+    bestMatches: matches.filter((match) => match.similarityScore > 0.9),
+    goodMatches: matches.filter(
+      (match) => match.similarityScore > 0.85 && match.similarityScore <= 0.9
+    ),
+    possibleMatches: matches.filter(
+      (match) => match.similarityScore > 0.67 && match.similarityScore <= 0.85
+    ),
+  };
+};
+
+// Main content component that uses useSearchParams
 const ImageResultsContent = () => {
   const searchParams = useSearchParams();
-  const [results, setResults] = useState<ComparisonResults | null>(null);
+  const [results, setResults] = useState<ComparisonResult | null>(null);
+  const [seedsData, setSeedsData] = useState<Record<string, SeedData>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
@@ -45,17 +60,11 @@ const ImageResultsContent = () => {
           return;
         }
 
-        // Use relative URL if apiBaseUrl is not defined
-        const apiUrl = apiBaseUrl
-          ? `${apiBaseUrl}/api/image-comparison?id=${resultId}`
-          : `/api/image-comparison?id=${resultId}`;
-
-        console.log("Fetching results from:", apiUrl);
-        const response = await fetch(apiUrl);
+        // Fetch results from API
+        const response = await fetch(`/api/image-comparison?id=${resultId}`);
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error("API response error:", response.status, errorText);
           throw new Error(
             `HTTP error! status: ${response.status}, details: ${errorText}`
           );
@@ -63,54 +72,22 @@ const ImageResultsContent = () => {
 
         const data = await response.json();
 
-        // Import seeds data from shared
+        // Import seeds data
         const { seeds } = await import("../../shared/seeds");
 
-        // Process the API response which now only contains IDs and similarity scores
-        if (!data || !data.matches) {
-          throw new Error("Invalid data format received from API");
-        }
+        // Create a lookup map for seed data
+        const seedsMap: Record<string, SeedData> = {};
+        seeds.forEach((seed) => {
+          seedsMap[seed.id] = {
+            id: seed.id,
+            name: seed.name,
+            img: seed.img,
+            description: seed.description,
+          };
+        });
 
-        // Map the matches to full seed data
-        const processedMatches = data.matches
-          .map((match: { id: string; similarityScore: number }) => {
-            const seedData = seeds.find((seed) => seed.id === match.id);
-            if (!seedData) {
-              console.warn(`Seed with ID ${match.id} not found in seeds data`);
-              return null;
-            }
-
-            return {
-              id: match.id,
-              name: seedData.name,
-              similarityScore: match.similarityScore,
-              imageUrl: seedData.img,
-            };
-          })
-          .filter(Boolean);
-
-        // Categorize matches based on similarity score
-        const bestMatches = processedMatches.filter(
-          (match: SeedMatch) => match.similarityScore > 0.9
-        );
-        const goodMatches = processedMatches.filter(
-          (match: SeedMatch) =>
-            match.similarityScore > 0.87 && match.similarityScore <= 0.9
-        );
-        const possibleMatches = processedMatches.filter(
-          (match: SeedMatch) =>
-            match.similarityScore > 0.67 && match.similarityScore <= 0.87
-        );
-
-        // Create the results object
-        const results: ComparisonResults = {
-          bestMatches,
-          goodMatches,
-          possibleMatches,
-          allResults: processedMatches,
-        };
-
-        setResults(results);
+        setSeedsData(seedsMap);
+        setResults(data);
       } catch (err) {
         console.error("Error fetching results:", err);
         setError("Erro ao buscar resultados");
@@ -188,10 +165,16 @@ const ImageResultsContent = () => {
     );
   }
 
+  // Categorize matches
+  const { bestMatches, goodMatches, possibleMatches } = categorizeMatches(
+    results.matches
+  );
+
+  // Check if we have any matches
   const hasMatches =
-    results.bestMatches.length > 0 ||
-    results.goodMatches.length > 0 ||
-    results.possibleMatches.length > 0;
+    bestMatches.length > 0 ||
+    goodMatches.length > 0 ||
+    possibleMatches.length > 0;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -201,7 +184,7 @@ const ImageResultsContent = () => {
             Resultados da Identificação
           </h1>
           <p className="text-gray-600">
-            Encontramos {results.allResults.length} sementes em nosso banco de
+            Encontramos {results.matches.length} sementes em nosso banco de
             dados
           </p>
         </div>
@@ -241,106 +224,130 @@ const ImageResultsContent = () => {
         )}
 
         {/* Best Matches */}
-        {results.bestMatches.length > 0 && (
+        {bestMatches.length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4 text-green-700 border-b pb-2">
               Melhores Correspondências
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {results.bestMatches.map((match) => (
-                <Link
-                  href={`/details/${match.id}`}
-                  key={match.id}
-                  className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  <div className="relative h-48">
-                    <img
-                      src={match.imageUrl}
-                      alt={match.name}
-                      className="object-cover"
-                    />
-                    <div className="absolute top-2 right-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-                      {formatSimilarity(match.similarityScore)}
+              {bestMatches.map((match) => {
+                const seed = seedsData[match.id];
+                if (!seed) return null;
+
+                return (
+                  <Link
+                    href={`/details/${match.id}`}
+                    key={match.id}
+                    className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                  >
+                    <div className="relative h-48">
+                      <img
+                        src={seed.img}
+                        alt={seed.name}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2 right-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                        {formatSimilarity(match.similarityScore)}
+                      </div>
                     </div>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-lg mb-1">{match.name}</h3>
-                    <p className="text-sm text-gray-600">
-                      Correspondência: {formatSimilarity(match.similarityScore)}
-                    </p>
-                  </div>
-                </Link>
-              ))}
+                    <div className="p-4">
+                      <h3 className="font-semibold text-lg mb-1">
+                        {seed.name}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Correspondência:{" "}
+                        {formatSimilarity(match.similarityScore)}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         )}
 
         {/* Good Matches */}
-        {results.goodMatches.length > 0 && (
+        {goodMatches.length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4 text-blue-700 border-b pb-2">
               Boas Correspondências
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {results.goodMatches.map((match) => (
-                <Link
-                  href={`/details/${match.id}`}
-                  key={match.id}
-                  className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  <div className="relative h-48">
-                    <img
-                      src={match.imageUrl}
-                      alt={match.name}
-                      className="object-cover"
-                    />
-                    <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-                      {formatSimilarity(match.similarityScore)}
+              {goodMatches.map((match) => {
+                const seed = seedsData[match.id];
+                if (!seed) return null;
+
+                return (
+                  <Link
+                    href={`/details/${match.id}`}
+                    key={match.id}
+                    className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                  >
+                    <div className="relative h-48">
+                      <img
+                        src={seed.img}
+                        alt={seed.name}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                        {formatSimilarity(match.similarityScore)}
+                      </div>
                     </div>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-lg mb-1">{match.name}</h3>
-                    <p className="text-sm text-gray-600">
-                      Correspondência: {formatSimilarity(match.similarityScore)}
-                    </p>
-                  </div>
-                </Link>
-              ))}
+                    <div className="p-4">
+                      <h3 className="font-semibold text-lg mb-1">
+                        {seed.name}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Correspondência:{" "}
+                        {formatSimilarity(match.similarityScore)}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         )}
 
         {/* Possible Matches */}
-        {results.possibleMatches.length > 0 && (
+        {possibleMatches.length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4 text-yellow-700 border-b pb-2">
               Possíveis Correspondências
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {results.possibleMatches.map((match) => (
-                <Link
-                  href={`/details/${match.id}`}
-                  key={match.id}
-                  className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  <div className="relative h-48">
-                    <img
-                      src={match.imageUrl}
-                      alt={match.name}
-                      className="object-cover"
-                    />
-                    <div className="absolute top-2 right-2 bg-yellow-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-                      {formatSimilarity(match.similarityScore)}
+              {possibleMatches.map((match) => {
+                const seed = seedsData[match.id];
+                if (!seed) return null;
+
+                return (
+                  <Link
+                    href={`/details/${match.id}`}
+                    key={match.id}
+                    className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                  >
+                    <div className="relative h-48">
+                      <img
+                        src={seed.img}
+                        alt={seed.name}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2 right-2 bg-yellow-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                        {formatSimilarity(match.similarityScore)}
+                      </div>
                     </div>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-lg mb-1">{match.name}</h3>
-                    <p className="text-sm text-gray-600">
-                      Correspondência: {formatSimilarity(match.similarityScore)}
-                    </p>
-                  </div>
-                </Link>
-              ))}
+                    <div className="p-4">
+                      <h3 className="font-semibold text-lg mb-1">
+                        {seed.name}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Correspondência:{" "}
+                        {formatSimilarity(match.similarityScore)}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         )}
