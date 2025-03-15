@@ -36,18 +36,8 @@ const ImageResultsContent = () => {
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        // Try to get the result ID from URL params
-        let resultId = searchParams.get("id");
-
-        // If not found, try to get it from localStorage as a fallback
-        if (!resultId) {
-          try {
-            resultId = localStorage.getItem("lastResultId");
-            console.log("Using resultId from localStorage:", resultId);
-          } catch (e) {
-            console.error("Failed to access localStorage:", e);
-          }
-        }
+        // Get the result ID from URL params
+        const resultId = searchParams.get("id");
 
         if (!resultId) {
           setError("ID de resultado não encontrado");
@@ -73,69 +63,60 @@ const ImageResultsContent = () => {
 
         const data = await response.json();
 
-        if (!data || !data.allResults) {
+        // Import seeds data from shared
+        const { seeds } = await import("../../shared/seeds");
+
+        // Process the API response which now only contains IDs and similarity scores
+        if (!data || !data.matches) {
           throw new Error("Invalid data format received from API");
         }
 
-        setResults(data);
+        // Map the matches to full seed data
+        const processedMatches = data.matches
+          .map((match: { id: string; similarityScore: number }) => {
+            const seedData = seeds.find((seed) => seed.id === match.id);
+            if (!seedData) {
+              console.warn(`Seed with ID ${match.id} not found in seeds data`);
+              return null;
+            }
 
-        // Store the results in localStorage as a fallback
-        try {
-          localStorage.setItem("lastImageResults", JSON.stringify(data));
-        } catch (e) {
-          console.error("Failed to store results in localStorage:", e);
-        }
+            return {
+              id: match.id,
+              name: seedData.name,
+              similarityScore: match.similarityScore,
+              imageUrl: seedData.img,
+            };
+          })
+          .filter(Boolean);
+
+        // Categorize matches based on similarity score
+        const bestMatches = processedMatches.filter(
+          (match: SeedMatch) => match.similarityScore > 0.9
+        );
+        const goodMatches = processedMatches.filter(
+          (match: SeedMatch) =>
+            match.similarityScore > 0.87 && match.similarityScore <= 0.9
+        );
+        const possibleMatches = processedMatches.filter(
+          (match: SeedMatch) =>
+            match.similarityScore > 0.67 && match.similarityScore <= 0.87
+        );
+
+        // Create the results object
+        const results: ComparisonResults = {
+          bestMatches,
+          goodMatches,
+          possibleMatches,
+          allResults: processedMatches,
+        };
+
+        setResults(results);
       } catch (err) {
         console.error("Error fetching results:", err);
-
-        // Try to get results from localStorage as a fallback
-        try {
-          const storedResults = localStorage.getItem("lastImageResults");
-          if (storedResults) {
-            console.log("Using results from localStorage");
-            const parsedResults = JSON.parse(storedResults);
-            if (parsedResults && parsedResults.allResults) {
-              setResults(parsedResults);
-              setError(null);
-              setLoading(false);
-              return;
-            }
-          }
-        } catch (e) {
-          console.error("Failed to access localStorage for results:", e);
-        }
-
-        setError("Erro ao buscar os resultados da comparação");
-        setErrorDetails(err instanceof Error ? err.message : String(err));
-
-        // Try to test the storage system
-        try {
-          const testUrl = apiBaseUrl
-            ? `${apiBaseUrl}/api/test-storage`
-            : `/api/test-storage`;
-
-          console.log("Testing storage at:", testUrl);
-          const testResponse = await fetch(testUrl);
-          const testData = await testResponse.json();
-          console.log("Storage test results:", testData);
-
-          if (!testData.success) {
-            setErrorDetails(
-              (prev) =>
-                `${prev || ""}\n\nStorage test failed: ${JSON.stringify(
-                  testData
-                )}`
-            );
-          }
-        } catch (testErr) {
-          console.error("Storage test failed:", testErr);
-          setErrorDetails(
-            (prev) =>
-              `${prev || ""}\n\nStorage test error: ${
-                testErr instanceof Error ? testErr.message : String(testErr)
-              }`
-          );
-        }
+        setError("Erro ao buscar resultados");
+        setErrorDetails(
+          err instanceof Error ? err.message : "Erro desconhecido"
+        );
       } finally {
         setLoading(false);
       }

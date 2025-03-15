@@ -17,12 +17,21 @@ interface SeedMatch {
   imageUrl: string;
 }
 
-interface SimilarityResults {
+// For full results with categorized matches
+interface FullSimilarityResults {
   bestMatches: SeedMatch[];
   goodMatches: SeedMatch[];
   possibleMatches: SeedMatch[];
   allResults: SeedMatch[];
 }
+
+// For simplified results with just ID and similarity score
+interface SimplifiedSimilarityResults {
+  matches: { id: string; similarityScore: number }[];
+}
+
+// Union type for both result formats
+type SimilarityResults = FullSimilarityResults | SimplifiedSimilarityResults;
 
 // File system storage for results
 const RESULTS_DIR = path.join(process.cwd(), "tmp");
@@ -171,8 +180,8 @@ const processParallelSimilarity = async (
   seeds: any[],
   imageUrl: string,
   featureExtractor: any
-): Promise<SimilarityResults> => {
-  const results: SimilarityResults = {
+): Promise<FullSimilarityResults> => {
+  const results: FullSimilarityResults = {
     bestMatches: [],
     goodMatches: [],
     possibleMatches: [],
@@ -300,9 +309,18 @@ export async function POST(request: Request) {
     const resultId = crypto.randomUUID();
     console.log(`Generated result ID: ${resultId}`);
 
-    // Store the results in a file
-    console.log(`Storing results to file...`);
-    const stored = storeResults(resultId, results);
+    // Create a simplified version of the results with just id and similarity score
+    const simplifiedMatches = results.allResults.map((match) => ({
+      id: match.id,
+      similarityScore: match.similarityScore,
+    }));
+
+    // Store the simplified results in a file
+    console.log(`Storing simplified results to file...`);
+    const simplifiedResults: SimplifiedSimilarityResults = {
+      matches: simplifiedMatches,
+    };
+    const stored = storeResults(resultId, simplifiedResults);
 
     if (!stored) {
       console.error(`Failed to store results for ID: ${resultId}`);
@@ -317,15 +335,10 @@ export async function POST(request: Request) {
 
     console.log(`Successfully stored results with ID: ${resultId}`);
 
-    // Return only the result ID instead of the full results
+    // Return only the result ID and simplified matches
     return NextResponse.json({
       resultId,
-      matchCounts: {
-        total: results.allResults.length,
-        best: results.bestMatches.length,
-        good: results.goodMatches.length,
-        possible: results.possibleMatches.length,
-      },
+      matches: simplifiedMatches,
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -398,7 +411,7 @@ export async function GET(request: Request) {
 
     console.log(`Successfully retrieved results for ID: ${resultId}`);
 
-    // Return the full results
+    // Return the simplified results
     return NextResponse.json(results);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

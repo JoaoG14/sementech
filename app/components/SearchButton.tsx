@@ -94,31 +94,24 @@ const SearchButton = () => {
         throw new Error("No result ID returned from API");
       }
 
-      // Store the result ID in localStorage as a fallback
-      try {
-        localStorage.setItem("lastResultId", data.resultId);
+      // Show a success message based on the number of matches
+      if (data.matches && data.matches.length > 0) {
+        const totalMatches = data.matches.length;
+        const bestMatches = data.matches.filter(
+          (m: { similarityScore: number }) => m.similarityScore > 0.9
+        ).length;
+        const goodMatches = data.matches.filter(
+          (m: { similarityScore: number }) =>
+            m.similarityScore > 0.87 && m.similarityScore <= 0.9
+        ).length;
 
-        // Also store match counts if available
-        if (data.matchCounts) {
-          localStorage.setItem(
-            "lastMatchCounts",
-            JSON.stringify(data.matchCounts)
-          );
-        }
-      } catch (e) {
-        console.error("Failed to store result data in localStorage:", e);
-      }
-
-      // Show a success message with match counts if available
-      if (data.matchCounts) {
-        const { total, best, good } = data.matchCounts;
         const matchMessage =
-          best > 0
-            ? `Encontramos ${best} correspondências excelentes!`
-            : good > 0
-            ? `Encontramos ${good} boas correspondências!`
-            : total > 0
-            ? `Encontramos ${total} possíveis correspondências.`
+          bestMatches > 0
+            ? `Encontramos ${bestMatches} correspondências excelentes!`
+            : goodMatches > 0
+            ? `Encontramos ${goodMatches} boas correspondências!`
+            : totalMatches > 0
+            ? `Encontramos ${totalMatches} possíveis correspondências.`
             : "Análise concluída. Redirecionando para os resultados...";
 
         toast.success(matchMessage, {
@@ -149,6 +142,21 @@ const SearchButton = () => {
 
   return (
     <div className="flex flex-col items-center justify-center w-full px-4 py-6">
+      <style jsx global>{`
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+
+        .animation-delay-150 {
+          animation-delay: 150ms;
+        }
+      `}</style>
+
       {/* Logo */}
       <div className="text-center">
         <Image
@@ -186,9 +194,9 @@ const SearchButton = () => {
                 disabled={isUploading || isLoading}
               >
                 {isUploading ? (
-                  <div className="animate-spin h-5 w-5 sm:h-6 sm:w-6 border-t-2 border-b-2 border-gray-600 rounded-full"></div>
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-[4px] border-gray-200 border-t-gray-600 border-l-gray-600 animate-spin"></div>
                 ) : isLoading ? (
-                  <div className="animate-spin h-5 w-5 sm:h-6 sm:w-6 border-t-2 border-b-2 border-gray-600 rounded-full"></div>
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-[4px] border-gray-200 border-t-gray-600 border-l-gray-600 animate-spin"></div>
                 ) : (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
