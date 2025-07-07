@@ -11,7 +11,6 @@ interface SeedMatch {
 }
 
 interface ComparisonResult {
-  resultId: string;
   matches: SeedMatch[];
 }
 
@@ -54,8 +53,7 @@ const ImageResultsContent = () => {
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        // Get parameters from URL
-        const resultId = searchParams.get("id");
+        // Get image URL from URL params
         const imageUrl = searchParams.get("imageUrl");
 
         // Load seeds data first
@@ -98,31 +96,16 @@ const ImageResultsContent = () => {
 
           const data = await response.json();
 
-          if (!data.resultId) {
-            throw new Error("No result ID returned from API");
+          if (!data.matches) {
+            throw new Error("No matches returned from API");
           }
 
           setResults(data);
           setIsProcessing(false);
         }
-        // Handle old flow: resultId provided - fetch existing results
-        else if (resultId) {
-          // Fetch results from API
-          const response = await fetch(`/api/image-comparison?id=${resultId}`);
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(
-              `HTTP error! status: ${response.status}, details: ${errorText}`
-            );
-          }
-
-          const data = await response.json();
-          setResults(data);
-        }
         // No valid parameters
         else {
-          setError("ID de resultado ou URL da imagem não encontrado");
+          setError("URL da imagem não encontrada");
           setLoading(false);
           return;
         }

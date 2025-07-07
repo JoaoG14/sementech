@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
 import { seeds } from "../../shared/seeds";
-import crypto from "crypto";
-import fs from "fs";
-import path from "path";
 
 // Define types for embeddings and results
 type ImageEmbedding = number[];
@@ -13,57 +10,8 @@ interface SeedMatch {
 }
 
 interface ComparisonResult {
-  resultId: string;
   matches: SeedMatch[];
 }
-
-// File system storage for results
-const RESULTS_DIR = path.join(process.cwd(), "tmp");
-
-// Ensure the results directory exists
-if (!fs.existsSync(RESULTS_DIR)) {
-  fs.mkdirSync(RESULTS_DIR, { recursive: true });
-}
-
-// Store results in a file
-const storeResults = (resultId: string, results: ComparisonResult): boolean => {
-  try {
-    const filePath = path.join(RESULTS_DIR, `${resultId}.json`);
-    fs.writeFileSync(filePath, JSON.stringify(results));
-
-    // Set up auto-cleanup after 30 minutes
-    setTimeout(() => {
-      try {
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-        }
-      } catch (err) {
-        console.error(`Failed to delete result file ${resultId}:`, err);
-      }
-    }, 30 * 60 * 1000);
-
-    return true;
-  } catch (error) {
-    console.error(`Failed to store results for ${resultId}:`, error);
-    return false;
-  }
-};
-
-// Retrieve results from a file
-const getResults = (resultId: string): ComparisonResult | null => {
-  try {
-    const filePath = path.join(RESULTS_DIR, `${resultId}.json`);
-    if (!fs.existsSync(filePath)) {
-      return null;
-    }
-
-    const data = fs.readFileSync(filePath, "utf8");
-    return JSON.parse(data) as ComparisonResult;
-  } catch (error) {
-    console.error(`Failed to retrieve results for ${resultId}:`, error);
-    return null;
-  }
-};
 
 // Load the transformers library
 const loadTransformers = async () => {
@@ -159,11 +107,7 @@ const processImageComparison = async (
   // Sort matches by similarity score (highest first)
   matches.sort((a, b) => b.similarityScore - a.similarityScore);
 
-  // Generate a unique ID for the results
-  const resultId = crypto.randomUUID();
-
   return {
-    resultId,
     matches: matches.slice(0, 20), // Return top 20 matches
   };
 };
@@ -185,18 +129,8 @@ export async function POST(request: Request) {
       imageUrl.substring(0, 50) + "..."
     );
 
-    // Process image comparison
+    // Process image comparison and return results directly
     const result = await processImageComparison(imageUrl);
-
-    // Store results
-    const stored = storeResults(result.resultId, result);
-
-    if (!stored) {
-      return NextResponse.json(
-        { error: "Failed to store results" },
-        { status: 500 }
-      );
-    }
 
     return NextResponse.json(result);
   } catch (error) {
@@ -206,41 +140,6 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error: "Failed to process image comparison",
-        details: errorMessage,
-      },
-      { status: 500 }
-    );
-  }
-}
-
-// GET endpoint to retrieve results by ID
-export async function GET(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const resultId = searchParams.get("id");
-
-    if (!resultId) {
-      return NextResponse.json(
-        { error: "Result ID is required" },
-        { status: 400 }
-      );
-    }
-
-    // Get the results from file storage
-    const results = getResults(resultId);
-
-    if (!results) {
-      return NextResponse.json({ error: "Results not found" }, { status: 404 });
-    }
-
-    return NextResponse.json(results);
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("Error retrieving image comparison results:", errorMessage);
-
-    return NextResponse.json(
-      {
-        error: "Failed to retrieve results",
         details: errorMessage,
       },
       { status: 500 }
