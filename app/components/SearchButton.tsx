@@ -133,12 +133,12 @@ const SearchButton = () => {
         <Image
           src="/assets/sementech-logo.png"
           alt="Sementech Logo"
-          width={300}
-          height={300}
+          width={150}
+          height={150}
           priority
-          className="mx-auto w-[200px] sm:w-[300px] h-auto"
+          className="mx-auto w-[150px] sm:w-[150px] h-auto"
         />
-        <p className="text-base sm:text-xl text-gray-600 mb-6 sm:mb-10 px-4">
+        <p className="text-base sm:text-xl text-gray-600 mb-6 mt-4 sm:mb-10 px-4">
           Encontre as melhores sementes para o seu cultivo
         </p>
       </div>

@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Seed, seeds } from "@/app/shared/seeds";
 import Image from "next/image";
 import NavBar from "@/app/components/NavBar";
+
 const Details = () => {
   const params = useParams();
+  const router = useRouter();
   const [seed, setSeed] = useState<Seed | null>(null);
 
   useEffect(() => {
@@ -27,6 +29,29 @@ const Details = () => {
     <>
       <NavBar />
       <div className="min-h-screen bg-gray-50 pb-36 px-4">
+        {/* Back Button */}
+        <div className="max-w-4xl mx-auto pt-6 pb-4">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            Voltar
+          </button>
+        </div>
+
         <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm">
           {/* Header Section */}
           <div className="grid md:grid-cols-2 gap-8 p-8">

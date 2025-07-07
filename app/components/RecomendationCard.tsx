@@ -24,7 +24,7 @@ const RecomendationCard: React.FC<RecomendationCardProps> = ({ seedInfo }) => {
   };
 
   return (
-    <div className="group">
+    <div className="group cursor-pointer" onClick={handleClick}>
       {/* Card content */}
       <div className="relative bg-white rounded-xl shadow-sm group-hover:shadow-xl transition-all duration-300 overflow-hidden max-w-[400px] border border-gray-200">
         {/* Seed Image with gradient overlay */}
