@@ -568,7 +568,7 @@ export const seeds: Seed[] = [
   },
   {
     id: "027",
-    img: "https://www.microgreen-shop.com/wp-content/uploads/2018/04/1-2.png",
+    img: "https://www.800wheatgrass.com/wp/wp-content/uploads/2020/03/broccoli-seed-.jpg",
     name: "Brócolis",
     germination_rate: "90%",
     seed_count: "100",

@@ -12,7 +12,6 @@ const urlEndpoint = process.env.NEXT_PUBLIC_URL_ENDPOINT;
 const SearchButton = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -56,63 +55,33 @@ const SearchButton = () => {
   const handleUploadSuccess = async (res: any) => {
     try {
       setIsUploading(false);
-      setIsProcessing(true);
       setError(null);
 
       // Get the uploaded image URL
       const imageUrl = res.url;
 
-      // Call the image comparison API
-      const response = await fetch("/api/image-comparison", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ imageUrl }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `HTTP error! status: ${response.status}, details: ${errorText}`
-        );
-      }
-
-      const data = await response.json();
-
-      if (!data.resultId) {
-        throw new Error("No result ID returned from API");
-      }
-
       // Show success message
-      const matchCount = data.matches.length;
-      const goodMatches = data.matches.filter(
-        (m: { similarityScore: number }) => m.similarityScore > 0.85
-      ).length;
+      toast.success(
+        "Imagem enviada com sucesso! Redirecionando para análise...",
+        {
+          duration: 3000,
+        }
+      );
 
-      const message =
-        goodMatches > 0
-          ? `Encontramos ${goodMatches} boas correspondências!`
-          : matchCount > 0
-          ? `Encontramos ${matchCount} possíveis correspondências.`
-          : "Análise concluída. Redirecionando para os resultados...";
-
-      toast.success(message, { duration: 3000 });
-
-      // Redirect to results page
-      router.push(`/search/image-results?id=${data.resultId}`);
+      // Redirect to results page with image URL
+      router.push(
+        `/search/image-results?imageUrl=${encodeURIComponent(imageUrl)}`
+      );
     } catch (err) {
-      console.error("Error during image comparison:", err);
+      console.error("Error during image upload:", err);
       setError(
         err instanceof Error
           ? err.message
-          : "Erro ao processar a comparação de imagem"
+          : "Erro ao processar o upload da imagem"
       );
       toast.error("Erro ao processar a imagem. Por favor, tente novamente.", {
         duration: 5000,
       });
-    } finally {
-      setIsProcessing(false);
     }
   };
 
@@ -155,7 +124,7 @@ const SearchButton = () => {
               onKeyPress={handleKeyPress}
               placeholder="Buscar por sementes, plantas ou culturas..."
               className="flex-1 bg-transparent px-4 sm:px-6 py-3 text-gray-800 placeholder-gray-400 text-base sm:text-lg focus:outline-none"
-              disabled={isUploading || isProcessing}
+              disabled={isUploading}
             />
             <div className="flex items-center gap-2">
               {/* Image Upload Button */}
@@ -163,9 +132,9 @@ const SearchButton = () => {
                 onClick={handleImageClick}
                 className="p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group border border-gray-200"
                 title="Enviar imagem de planta para identificação"
-                disabled={isUploading || isProcessing}
+                disabled={isUploading}
               >
-                {isUploading || isProcessing ? (
+                {isUploading ? (
                   <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-[4px] border-gray-200 border-t-gray-600 border-l-gray-600 animate-spin"></div>
                 ) : (
                   <svg
@@ -190,7 +159,7 @@ const SearchButton = () => {
                 onClick={handleSearch}
                 className="p-3 rounded-xl bg-gradient-to-r from-[#7ECD2C] to-[#9BDE5A] hover:from-[#6CB925] hover:to-[#8AC94D] transition-all shadow-sm hover:shadow-md"
                 title="Buscar"
-                disabled={isUploading || isProcessing}
+                disabled={isUploading}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -251,7 +220,7 @@ const SearchButton = () => {
                 onClick={() =>
                   router.push(`/search?query=${encodeURIComponent(item)}`)
                 }
-                disabled={isUploading || isProcessing}
+                disabled={isUploading}
               >
                 {item}
               </button>

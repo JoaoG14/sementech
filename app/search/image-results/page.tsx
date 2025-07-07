@@ -49,35 +49,17 @@ const ImageResultsContent = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        // Get the result ID from URL params
+        // Get parameters from URL
         const resultId = searchParams.get("id");
+        const imageUrl = searchParams.get("imageUrl");
 
-        if (!resultId) {
-          setError("ID de resultado não encontrado");
-          setLoading(false);
-          return;
-        }
-
-        // Fetch results from API
-        const response = await fetch(`/api/image-comparison?id=${resultId}`);
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(
-            `HTTP error! status: ${response.status}, details: ${errorText}`
-          );
-        }
-
-        const data = await response.json();
-
-        // Import seeds data
+        // Load seeds data first
         const { seeds } = await import("../../shared/seeds");
-
-        // Create a lookup map for seed data
         const seedsMap: Record<string, SeedData> = {};
         seeds.forEach((seed) => {
           seedsMap[seed.id] = {
@@ -87,15 +69,70 @@ const ImageResultsContent = () => {
             description: seed.description,
           };
         });
-
         setSeedsData(seedsMap);
-        setResults(data);
+
+        // Handle new flow: imageUrl provided - perform comparison
+        if (imageUrl) {
+          setIsProcessing(true);
+
+          console.log(
+            "Processing image comparison for URL:",
+            imageUrl.substring(0, 50) + "..."
+          );
+
+          // Call the image comparison API
+          const response = await fetch("/api/image-comparison", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ imageUrl: decodeURIComponent(imageUrl) }),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(
+              `HTTP error! status: ${response.status}, details: ${errorText}`
+            );
+          }
+
+          const data = await response.json();
+
+          if (!data.resultId) {
+            throw new Error("No result ID returned from API");
+          }
+
+          setResults(data);
+          setIsProcessing(false);
+        }
+        // Handle old flow: resultId provided - fetch existing results
+        else if (resultId) {
+          // Fetch results from API
+          const response = await fetch(`/api/image-comparison?id=${resultId}`);
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(
+              `HTTP error! status: ${response.status}, details: ${errorText}`
+            );
+          }
+
+          const data = await response.json();
+          setResults(data);
+        }
+        // No valid parameters
+        else {
+          setError("ID de resultado ou URL da imagem não encontrado");
+          setLoading(false);
+          return;
+        }
       } catch (err) {
-        console.error("Error fetching results:", err);
-        setError("Erro ao buscar resultados");
+        console.error("Error fetching/processing results:", err);
+        setError("Erro ao processar a imagem ou buscar resultados");
         setErrorDetails(
           err instanceof Error ? err.message : "Erro desconhecido"
         );
+        setIsProcessing(false);
       } finally {
         setLoading(false);
       }
@@ -104,7 +141,11 @@ const ImageResultsContent = () => {
     fetchResults();
   }, [searchParams]);
 
-  if (loading) {
+  if (loading || isProcessing) {
+    const loadingMessage = isProcessing
+      ? "Analisando a imagem e comparando com nossa base de sementes..."
+      : "Carregando resultados...";
+
     return (
       <div className="font-Mulish bg-gray-50 min-h-screen">
         <NavBar />
@@ -133,9 +174,12 @@ const ImageResultsContent = () => {
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#7DCB2D] mx-auto"></div>
-            <p className="mt-4 text-gray-600 font-Mulish">
-              Carregando resultados...
-            </p>
+            <p className="mt-4 text-gray-600 font-Mulish">{loadingMessage}</p>
+            {isProcessing && (
+              <p className="mt-2 text-sm text-gray-500 font-Mulish">
+                Isso pode levar alguns segundos...
+              </p>
+            )}
           </div>
         </div>
       </div>
